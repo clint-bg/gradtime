@@ -6,7 +6,7 @@ interface NavbarProps {
   setActiveTab: (tab: 'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog' | 'docs') => void;
   onResetToBaseline: () => void;
   onApplyPreset: (presetName: string) => void;
-  onOpenDeployGuide: () => void;
+  onOpenDeployGuide?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -131,14 +131,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <RotateCcw className="h-3.5 w-3.5 text-byu-tan" />
               <span className="hidden sm:inline">Reset</span>
-            </button>
-
-            <button
-              onClick={onOpenDeployGuide}
-              className="bg-byu-royal hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-md border border-blue-400/40 shadow-sm flex items-center space-x-1.5 transition-colors"
-            >
-              <Github className="h-3.5 w-3.5" />
-              <span>Deploy to GitHub</span>
             </button>
           </div>
         </div>
