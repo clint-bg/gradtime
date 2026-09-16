@@ -504,17 +504,19 @@ export function runSimulation(
           if (missingPrereqs.length > 0) continue;
 
           const isSpringSummerOffered = c.termsTaught.includes('Spring') || c.termsTaught.includes('Summer');
-          const isNonMajor = c.category === 'Gen' || c.category === 'Rel' || c.category === 'Eng' || c.category === 'EMSB' || c.category === 'EPSEL';
+          const isGenEdOrRel = c.category === 'Gen' || c.category === 'Rel';
 
-          if (isNonMajor || isSpringSummerOffered) {
+          // General education & Religion are available in Spring/Summer.
+          // Engineering courses (Major, Eng, EMSB, EPSEL) are NOT taught in Spring/Summer unless explicitly listed in classdetails.csv.
+          if (isGenEdOrRel || isSpringSummerOffered) {
             if (c.category === 'Gen') {
               const genMatch = c.genEdSets.length === 0 || c.genEdSets.includes(interventions.genEdSet.toString());
               if (genMatch) ssEligible.push(c);
             }
             else if (c.category === 'Rel' && ssRelDone < interventions.relCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'Eng' && ssEngDone < interventions.engCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'EMSB' && ssEmsbDone < interventions.emsbCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'EPSEL' && ssEpselDone < Math.max(interventions.epselCreditsRequired, 6)) ssEligible.push(c);
+            else if (c.category === 'Eng' && isSpringSummerOffered && ssEngDone < interventions.engCreditsRequired) ssEligible.push(c);
+            else if (c.category === 'EMSB' && isSpringSummerOffered && ssEmsbDone < interventions.emsbCreditsRequired) ssEligible.push(c);
+            else if (c.category === 'EPSEL' && isSpringSummerOffered && ssEpselDone < Math.max(interventions.epselCreditsRequired, 6)) ssEligible.push(c);
             else if (c.category === 'Major' && isSpringSummerOffered) ssEligible.push(c);
           }
         }

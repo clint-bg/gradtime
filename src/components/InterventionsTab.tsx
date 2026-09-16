@@ -503,7 +503,7 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-slate-800 block">Enable Spring / Summer Semester Enrollment</span>
-              <span className="text-xs text-slate-500">Allows students to take general education/electives during summer terms</span>
+              <span className="text-xs text-slate-500">Allows taking Gen Ed & Religion in Spring/Summer (Engineering courses restricted unless explicitly listed in classdetails.csv)</span>
             </div>
             <button
               onClick={() => onChangeInterventions({ ...interventions, enableSpringSummer: !interventions.enableSpringSummer })}
