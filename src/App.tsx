@@ -5,12 +5,13 @@ import { InterventionsTab } from './components/InterventionsTab';
 import { StudentInspectorTab } from './components/StudentInspectorTab';
 import { PrereqMapTab } from './components/PrereqMapTab';
 import { CatalogTab } from './components/CatalogTab';
+import { DocumentationTab } from './components/DocumentationTab';
 import { GitHubDeployGuide } from './components/GitHubDeployGuide';
 import { runSimulation, getDefaultInterventions } from './simulator/engine';
 import { Interventions } from './simulator/types';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog' | 'docs'>('dashboard');
   const [interventions, setInterventions] = useState<Interventions>(getDefaultInterventions());
   const [isDeployGuideOpen, setIsDeployGuideOpen] = useState<boolean>(false);
 
@@ -113,6 +114,8 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'catalog' && <CatalogTab />}
+
+        {activeTab === 'docs' && <DocumentationTab />}
       </main>
 
       {/* GitHub Pages Deploy Modal */}

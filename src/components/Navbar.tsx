@@ -1,9 +1,9 @@
 import React from 'react';
-import { GraduationCap, RotateCcw, Github, BookOpen, Sliders, BarChart3, Users, Network } from 'lucide-react';
+import { GraduationCap, RotateCcw, Github, BookOpen, Sliders, BarChart3, Users, Network, HelpCircle } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog';
-  setActiveTab: (tab: 'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog') => void;
+  activeTab: 'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog' | 'docs';
+  setActiveTab: (tab: 'dashboard' | 'interventions' | 'inspector' | 'prereqMap' | 'catalog' | 'docs') => void;
   onResetToBaseline: () => void;
   onApplyPreset: (presetName: string) => void;
   onOpenDeployGuide: () => void;
@@ -94,6 +94,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               <BookOpen className="h-4 w-4 text-byu-tan" />
               <span>Course Catalog & Plans</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('docs')}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'docs'
+                  ? 'bg-white/20 text-white shadow-inner'
+                  : 'text-slate-200 hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <HelpCircle className="h-4 w-4 text-byu-tan" />
+              <span>How It Works</span>
+            </button>
           </nav>
 
           {/* Action Buttons */}
@@ -163,6 +175,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           className={`py-1 px-2 rounded ${activeTab === 'catalog' ? 'bg-white/20 font-bold' : ''}`}
         >
           Catalog
+        </button>
+        <button
+          onClick={() => setActiveTab('docs')}
+          className={`py-1 px-2 rounded ${activeTab === 'docs' ? 'bg-white/20 font-bold' : ''}`}
+        >
+          Walkthrough
         </button>
       </div>
     </header>
