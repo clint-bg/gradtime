@@ -44,6 +44,12 @@ export function getDefaultInterventions(): Interventions {
     workingPercentage: 0.40,
     workPenaltyCredits: 2.5,
     enableSpringSummer: false,
+    prereqMode: 'strict',
+    relaxCbe273To374: false,
+    relaxCbe374To376: false,
+    relaxCbe376To476: false,
+    relaxMath302ToCbe374: false,
+    relaxChem351ToCbe386: false,
   };
 }
 
@@ -119,6 +125,37 @@ export function runSimulation(
     let overridePrereqs = interventions.prereqOverrides[c.classId] !== undefined
       ? interventions.prereqOverrides[c.classId]
       : c.prereqs;
+    let overrideConcurrent = [...c.concurrentPrereqs];
+
+    // Global Prerequisite Modes
+    if (interventions.prereqMode === 'none') {
+      overridePrereqs = [];
+      overrideConcurrent = [];
+    } else if (interventions.prereqMode === 'concurrentCore') {
+      if (c.classId === '017') overrideConcurrent.push('005');
+      if (c.classId === '018') overrideConcurrent.push('017');
+      if (c.classId === '026' || c.classId === '023') overrideConcurrent.push('018');
+    } else if (interventions.prereqMode === 'waiveMathChem') {
+      if (c.classId === '017') overridePrereqs = overridePrereqs.filter(pId => pId !== '007');
+      if (c.classId === '021') overridePrereqs = overridePrereqs.filter(pId => pId !== '032');
+    }
+
+    // Individual Prerequisite Toggles
+    if (interventions.relaxCbe273To374 && c.classId === '017') {
+      overrideConcurrent.push('005');
+    }
+    if (interventions.relaxCbe374To376 && c.classId === '018') {
+      overrideConcurrent.push('017');
+    }
+    if (interventions.relaxCbe376To476 && (c.classId === '026' || c.classId === '023')) {
+      overrideConcurrent.push('018');
+    }
+    if (interventions.relaxMath302ToCbe374 && c.classId === '017') {
+      overridePrereqs = overridePrereqs.filter(pId => pId !== '007');
+    }
+    if (interventions.relaxChem351ToCbe386 && c.classId === '021') {
+      overridePrereqs = overridePrereqs.filter(pId => pId !== '032');
+    }
 
     // Filter out removed course requirements from any course prerequisites (e.g. CBE 479 requiring WRTG 316)
     if (interventions.removeWrtg316) {
@@ -136,6 +173,7 @@ export function runSimulation(
       ...c,
       credits: overrideCredits,
       prereqs: overridePrereqs,
+      concurrentPrereqs: overrideConcurrent,
       termsTaught: overrideTerms,
     });
   }

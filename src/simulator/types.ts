@@ -69,6 +69,13 @@ export interface Interventions {
   workingPercentage: number;     // default 40% (0.4)
   workPenaltyCredits: number;    // default 2.5 credits
   enableSpringSummer: boolean;   // default false
+  // Prerequisite Relaxation Interventions
+  prereqMode: 'strict' | 'concurrentCore' | 'waiveMathChem' | 'none'; // default 'strict'
+  relaxCbe273To374: boolean;     // default false
+  relaxCbe374To376: boolean;     // default false
+  relaxCbe376To476: boolean;     // default false
+  relaxMath302ToCbe374: boolean; // default false
+  relaxChem351ToCbe386: boolean; // default false
 }
 
 export interface BottleneckStat {

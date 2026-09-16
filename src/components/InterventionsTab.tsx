@@ -306,7 +306,132 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
           </div>
         </div>
 
-        {/* Section 3: Student Population Characteristics */}
+        {/* Section 3: Prerequisite Requirement Relaxation */}
+        <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4 lg:col-span-2">
+          <div className="border-b border-slate-200 pb-3">
+            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-byu-navy" />
+              <span>Prerequisite Requirement Relaxation & What-If Modes</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Test policy interventions that relax or remove prerequisite restrictions to observe the impact on student flow and overall graduation times.
+            </p>
+          </div>
+
+          {/* Preset Prerequisite Modes */}
+          <div className="space-y-3">
+            <span className="text-xs font-bold text-slate-700 block uppercase tracking-wide">Preset Relaxation Modes</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                {
+                  id: 'strict',
+                  title: 'Strict Baseline',
+                  subtitle: 'Default catalog rules',
+                  desc: 'Enforces all prerequisites strictly prior to course enrollment (except lab corequisites).',
+                },
+                {
+                  id: 'concurrentCore',
+                  title: 'Concurrent Core CBE',
+                  subtitle: 'CBE 273/374/376/476',
+                  desc: 'Allows core CBE sequences to be taken concurrently in the same semester.',
+                },
+                {
+                  id: 'waiveMathChem',
+                  title: 'Waive Math & Chem',
+                  subtitle: 'MATH 302 & CHEM 351',
+                  desc: 'Removes Math and O-Chem blocking prerequisites for 300-level CBE core courses.',
+                },
+                {
+                  id: 'none',
+                  title: 'Complete Removal',
+                  subtitle: 'Zero Prerequisites',
+                  desc: 'Removes 100% of prerequisites catalog-wide to test theoretical minimum time.',
+                },
+              ].map((mode) => {
+                const active = interventions.prereqMode === mode.id;
+                return (
+                  <button
+                    key={mode.id}
+                    onClick={() => onChangeInterventions({ ...interventions, prereqMode: mode.id as any })}
+                    className={`p-3 rounded-xl border text-left text-xs transition-all flex flex-col justify-between ${
+                      active
+                        ? 'bg-byu-navy/10 border-byu-royal text-byu-navy font-bold shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-sm">{mode.title}</span>
+                        {active && <Check className="h-4 w-4 text-byu-royal shrink-0" />}
+                      </div>
+                      <span className="text-[10px] text-byu-royal font-semibold block mt-0.5">{mode.subtitle}</span>
+                      <p className="text-[11px] font-normal text-slate-500 mt-1.5 leading-snug">{mode.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Individual Targeted Prerequisite Removals */}
+          <div className="pt-3 border-t border-slate-200 space-y-2">
+            <span className="text-xs font-bold text-slate-700 block uppercase tracking-wide">Targeted Prerequisite Removals</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {[
+                {
+                  key: 'relaxCbe273To374',
+                  title: 'CBE 273 → CBE 374',
+                  desc: 'Allows CBE 273 and CBE 374 concurrently in same semester',
+                },
+                {
+                  key: 'relaxCbe374To376',
+                  title: 'CBE 374 → CBE 376',
+                  desc: 'Allows CBE 374 and CBE 376 concurrently in same semester',
+                },
+                {
+                  key: 'relaxCbe376To476',
+                  title: 'CBE 376 → CBE 476 / 436',
+                  desc: 'Allows CBE 376 and CBE 476/436 concurrently in same semester',
+                },
+                {
+                  key: 'relaxMath302ToCbe374',
+                  title: 'MATH 302 → CBE 374',
+                  desc: 'Waives MATH 302 requirement prior to CBE 374',
+                },
+                {
+                  key: 'relaxChem351ToCbe386',
+                  title: 'CHEM 351 → CBE 386',
+                  desc: 'Waives CHEM 351 requirement prior to CBE 386',
+                },
+              ].map((item) => {
+                const active = (interventions as any)[item.key];
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => onChangeInterventions({ ...interventions, [item.key]: !active })}
+                    className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
+                      active
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                    }`}
+                  >
+                    <div>
+                      <span className="block font-bold">{item.title}</span>
+                      <span className="text-[11px] font-normal text-slate-500">{item.desc}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
+                      active ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      {active ? 'Relaxed' : 'Strict'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: Student Population Characteristics */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4 lg:col-span-2">
           <div className="border-b border-slate-200 pb-3">
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
