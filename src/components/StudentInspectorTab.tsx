@@ -146,7 +146,7 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
                       st.graduationSemester! <= 8 ? 'bg-emerald-100 text-emerald-800' :
                       st.graduationSemester! <= 10 ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'
                     }`}>
-                      {st.graduationSemester} Sem
+                      {(st.graduationSemester! / 2).toFixed(1)} Yrs
                     </span>
                   </div>
                 </button>
@@ -185,9 +185,10 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
                   </div>
                 </div>
 
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-center self-start md:self-auto min-w-[150px]">
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-center self-start md:self-auto min-w-[160px]">
                   <span className="text-[11px] text-slate-500 uppercase font-semibold block">Total Time to Graduation</span>
-                  <span className="text-2xl font-black text-byu-navy">{selectedStudent.graduationSemester} Semesters</span>
+                  <span className="text-2xl font-black text-byu-navy">{(selectedStudent.graduationSemester! / 2).toFixed(1)} Years</span>
+                  <span className="text-[11px] text-slate-500 font-medium block">({selectedStudent.graduationSemester} Semesters)</span>
                 </div>
               </div>
 
