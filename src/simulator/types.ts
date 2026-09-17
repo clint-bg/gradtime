@@ -63,6 +63,10 @@ export interface Interventions {
   // Course requirement removals
   removeWrtg316: boolean;        // default false (remove WRTG 316)
   removeEcon110: boolean;        // default false (remove ECON 110)
+  removeMath303: boolean;        // default false (remove MATH 303)
+  removeChem464: boolean;        // default false (remove CHEM 464)
+  removeStat121: boolean;        // default false (remove STAT 121)
+  removeCbeSeminars: boolean;    // default false (remove CBE 191, 291, 391)
   // Student population parameters
   populationMeanCredits: number; // default 14.5
   populationStdDevCredits: number; // default 1.8

@@ -39,6 +39,10 @@ export function getDefaultInterventions(): Interventions {
     prereqOverrides: {},
     removeWrtg316: false,
     removeEcon110: false,
+    removeMath303: false,
+    removeChem464: false,
+    removeStat121: false,
+    removeCbeSeminars: false,
     populationMeanCredits: 14.5,
     populationStdDevCredits: 1.8,
     workingPercentage: 0.30,
@@ -157,12 +161,15 @@ export function runSimulation(
       overridePrereqs = overridePrereqs.filter(pId => pId !== '032');
     }
 
-    // Filter out removed course requirements from any course prerequisites (e.g. CBE 479 requiring WRTG 316)
+    // Filter out removed course requirements from any course prerequisites
     if (interventions.removeWrtg316) {
       overridePrereqs = overridePrereqs.filter(pId => pId !== '035');
     }
     if (interventions.removeEcon110) {
       overridePrereqs = overridePrereqs.filter(pId => pId !== '034');
+    }
+    if (interventions.removeMath303) {
+      overridePrereqs = overridePrereqs.filter(pId => pId !== '010');
     }
 
     const overrideTerms = interventions.offeringOverrides[c.classId] !== undefined
@@ -251,6 +258,10 @@ export function runSimulation(
         // Skip removed course requirements
         if (c.classId === '035' && interventions.removeWrtg316) continue;
         if (c.classId === '034' && interventions.removeEcon110) continue;
+        if (c.classId === '010' && interventions.removeMath303) continue;
+        if (c.classId === '038' && interventions.removeChem464) continue;
+        if (c.classId === '036' && interventions.removeStat121) continue;
+        if ((c.classId === '002' || c.classId === '004' || c.classId === '022') && interventions.removeCbeSeminars) continue;
 
         // Check substitution rules
         if (c.substitutionAllowed && c.substitutionClassIds.length > 0) {
@@ -494,6 +505,10 @@ export function runSimulation(
           if (student.completedCourses.has(c.classId)) continue;
           if (c.classId === '035' && interventions.removeWrtg316) continue;
           if (c.classId === '034' && interventions.removeEcon110) continue;
+          if (c.classId === '010' && interventions.removeMath303) continue;
+          if (c.classId === '038' && interventions.removeChem464) continue;
+          if (c.classId === '036' && interventions.removeStat121) continue;
+          if ((c.classId === '002' || c.classId === '004' || c.classId === '022') && interventions.removeCbeSeminars) continue;
 
           if (c.substitutionAllowed && c.substitutionClassIds.length > 0) {
             const subDone = c.substitutionClassIds.some(subId => student.completedCourses.has(subId));

@@ -263,7 +263,8 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
             <div className="pt-3 border-t border-slate-200 space-y-2">
               <span className="text-xs font-bold text-slate-700 block uppercase tracking-wide">Specific Course Requirement Exemptions</span>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {/* WRTG 316 */}
                 <button
                   onClick={() => onChangeInterventions({ ...interventions, removeWrtg316: !interventions.removeWrtg316 })}
                   className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
@@ -276,13 +277,14 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                     <span className="block font-bold">WRTG 316</span>
                     <span className="text-[11px] font-normal text-slate-500">Tech Communication (3 cr)</span>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
                     interventions.removeWrtg316 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
                   }`}>
-                    {interventions.removeWrtg316 ? 'Removed' : 'Required'}
+                    {interventions.removeWrtg316 ? 'Exempt' : 'Required'}
                   </span>
                 </button>
 
+                {/* ECON 110 */}
                 <button
                   onClick={() => onChangeInterventions({ ...interventions, removeEcon110: !interventions.removeEcon110 })}
                   className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
@@ -295,10 +297,90 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                     <span className="block font-bold">ECON 110</span>
                     <span className="text-[11px] font-normal text-slate-500">Macro Economics (3 cr)</span>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
                     interventions.removeEcon110 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
                   }`}>
-                    {interventions.removeEcon110 ? 'Removed' : 'Required'}
+                    {interventions.removeEcon110 ? 'Exempt' : 'Required'}
+                  </span>
+                </button>
+
+                {/* MATH 303 */}
+                <button
+                  onClick={() => onChangeInterventions({ ...interventions, removeMath303: !interventions.removeMath303 })}
+                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
+                    interventions.removeMath303
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <span className="block font-bold">MATH 303</span>
+                    <span className="text-[11px] font-normal text-slate-500">Math for Engineers 2 (4 cr)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
+                    interventions.removeMath303 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {interventions.removeMath303 ? 'Exempt' : 'Required'}
+                  </span>
+                </button>
+
+                {/* CHEM 464 */}
+                <button
+                  onClick={() => onChangeInterventions({ ...interventions, removeChem464: !interventions.removeChem464 })}
+                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
+                    interventions.removeChem464
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <span className="block font-bold">CHEM 464</span>
+                    <span className="text-[11px] font-normal text-slate-500">P-Chem Lab (1 cr)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
+                    interventions.removeChem464 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {interventions.removeChem464 ? 'Exempt' : 'Required'}
+                  </span>
+                </button>
+
+                {/* STAT 121 */}
+                <button
+                  onClick={() => onChangeInterventions({ ...interventions, removeStat121: !interventions.removeStat121 })}
+                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
+                    interventions.removeStat121
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <span className="block font-bold">STAT 121</span>
+                    <span className="text-[11px] font-normal text-slate-500">Statistics (3 cr)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
+                    interventions.removeStat121 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {interventions.removeStat121 ? 'Exempt' : 'Required'}
+                  </span>
+                </button>
+
+                {/* CBE Seminars (191, 291, 391) */}
+                <button
+                  onClick={() => onChangeInterventions({ ...interventions, removeCbeSeminars: !interventions.removeCbeSeminars })}
+                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
+                    interventions.removeCbeSeminars
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <span className="block font-bold">CBE Seminars</span>
+                    <span className="text-[11px] font-normal text-slate-500">CBE 191, 291, 391 (2 cr)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
+                    interventions.removeCbeSeminars ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {interventions.removeCbeSeminars ? 'Exempt' : 'Required'}
                   </span>
                 </button>
               </div>
