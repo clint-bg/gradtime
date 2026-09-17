@@ -27,6 +27,16 @@ function sampleNormal(mean: number, stdDev: number): number {
   return mean + num * stdDev;
 }
 
+export function isCourseExempted(classId: string, interventions: Interventions): boolean {
+  if (classId === '035' && interventions.removeWrtg316) return true;
+  if (classId === '034' && interventions.removeEcon110) return true;
+  if (classId === '010' && interventions.removeMath303) return true;
+  if (classId === '038' && interventions.removeChem464) return true;
+  if (classId === '036' && interventions.removeStat121) return true;
+  if ((classId === '002' || classId === '004' || classId === '022') && interventions.removeCbeSeminars) return true;
+  return false;
+}
+
 export function getDefaultInterventions(): Interventions {
   return {
     offeringOverrides: {},
@@ -256,12 +266,7 @@ export function runSimulation(
         if (student.completedCourses.has(c.classId)) continue;
 
         // Skip removed course requirements
-        if (c.classId === '035' && interventions.removeWrtg316) continue;
-        if (c.classId === '034' && interventions.removeEcon110) continue;
-        if (c.classId === '010' && interventions.removeMath303) continue;
-        if (c.classId === '038' && interventions.removeChem464) continue;
-        if (c.classId === '036' && interventions.removeStat121) continue;
-        if ((c.classId === '002' || c.classId === '004' || c.classId === '022') && interventions.removeCbeSeminars) continue;
+        if (isCourseExempted(c.classId, interventions)) continue;
 
         // Check substitution rules
         if (c.substitutionAllowed && c.substitutionClassIds.length > 0) {
@@ -503,12 +508,7 @@ export function runSimulation(
         const ssEligible: Course[] = [];
         for (const c of coursesMap.values()) {
           if (student.completedCourses.has(c.classId)) continue;
-          if (c.classId === '035' && interventions.removeWrtg316) continue;
-          if (c.classId === '034' && interventions.removeEcon110) continue;
-          if (c.classId === '010' && interventions.removeMath303) continue;
-          if (c.classId === '038' && interventions.removeChem464) continue;
-          if (c.classId === '036' && interventions.removeStat121) continue;
-          if ((c.classId === '002' || c.classId === '004' || c.classId === '022') && interventions.removeCbeSeminars) continue;
+          if (isCourseExempted(c.classId, interventions)) continue;
 
           if (c.substitutionAllowed && c.substitutionClassIds.length > 0) {
             const subDone = c.substitutionClassIds.some(subId => student.completedCourses.has(subId));
@@ -585,8 +585,7 @@ export function runSimulation(
 
       const majorCoursesAll = Array.from(coursesMap.values()).filter(c => c.category === 'Major');
       const majorFinished = majorCoursesAll.every(c => {
-        if (c.classId === '035' && interventions.removeWrtg316) return true;
-        if (c.classId === '034' && interventions.removeEcon110) return true;
+        if (isCourseExempted(c.classId, interventions)) return true;
         if (student.completedCourses.has(c.classId)) return true;
         if (c.substitutionAllowed && c.substitutionClassIds.some(subId => student.completedCourses.has(subId))) return true;
         return false;
@@ -597,6 +596,7 @@ export function runSimulation(
         c.category === 'Gen' && (c.genEdSets.length === 0 || c.genEdSets.includes(activeGenSetStr))
       );
       const genFinished = genCoursesAll.every(c => {
+        if (isCourseExempted(c.classId, interventions)) return true;
         if (student.completedCourses.has(c.classId)) return true;
         if (c.substitutionAllowed && c.substitutionClassIds.some(subId => student.completedCourses.has(subId))) return true;
         return false;
