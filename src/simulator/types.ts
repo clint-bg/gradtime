@@ -66,7 +66,7 @@ export interface Interventions {
   // Student population parameters
   populationMeanCredits: number; // default 14.5
   populationStdDevCredits: number; // default 1.8
-  workingPercentage: number;     // default 40% (0.4)
+  workingPercentage: number;     // default 30% (0.3)
   workPenaltyCredits: number;    // default 2.5 credits
   enableSpringSummer: boolean;   // default false
   // Prerequisite Relaxation Interventions

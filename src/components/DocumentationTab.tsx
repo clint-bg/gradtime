@@ -49,11 +49,11 @@ export const DocumentationTab: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
               <div className="text-xs text-slate-300 font-medium">Cohort Size</div>
-              <div className="text-lg font-black text-white">100 Students</div>
+              <div className="text-lg font-black text-white">250 Students</div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
               <div className="text-xs text-slate-300 font-medium">Catalog Courses</div>
-              <div className="text-lg font-black text-byu-tan">104 Courses</div>
+              <div className="text-lg font-black text-byu-tan">111 Courses</div>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/10">
               <div className="text-xs text-slate-300 font-medium">Baseline Graduation</div>
@@ -141,7 +141,7 @@ export const DocumentationTab: React.FC = () => {
                   <p className="text-xs text-slate-300">Cohort sampling, credit load preferences, and term scheduling mechanics</p>
                 </div>
               </div>
-              <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-semibold border border-emerald-500/40">Core Core Engine</span>
+              <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full font-semibold border border-emerald-500/40">Core Engine</span>
             </div>
 
             <div className="p-6 space-y-6">
@@ -152,7 +152,7 @@ export const DocumentationTab: React.FC = () => {
                     <span>Cohort Credit Capacity</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Each student in a 100-student cohort is sampled from a normal distribution of credit hour capacity (<span className="font-mono bg-slate-200 px-1 rounded">μ = 14.5</span>, <span className="font-mono bg-slate-200 px-1 rounded">σ = 1.8</span>), clamped between 12.0 and 20.0 credit hours per semester.
+                    Each student in a 250-student cohort is sampled from a normal distribution of credit hour capacity (<span className="font-mono bg-slate-200 px-1 rounded">μ = 14.5</span>, <span className="font-mono bg-slate-200 px-1 rounded">σ = 1.8</span>), clamped between 12.0 and 20.0 credit hours per semester.
                   </p>
                 </div>
 
@@ -162,7 +162,7 @@ export const DocumentationTab: React.FC = () => {
                     <span>Employment Credit Penalty</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Simulates part-time student employment (default 40% of cohort working). Working students incur a <span className="font-bold text-amber-700">-2.5 credit hour penalty</span> on their effective semester capacity limit.
+                    Simulates part-time student employment (default 30% of cohort working). Working students incur a <span className="font-bold text-amber-700">-2.5 credit hour penalty</span> on their effective semester capacity limit.
                   </p>
                 </div>
 

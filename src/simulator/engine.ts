@@ -41,7 +41,7 @@ export function getDefaultInterventions(): Interventions {
     removeEcon110: false,
     populationMeanCredits: 14.5,
     populationStdDevCredits: 1.8,
-    workingPercentage: 0.40,
+    workingPercentage: 0.30,
     workPenaltyCredits: 2.5,
     enableSpringSummer: false,
     prereqMode: 'strict',
@@ -107,7 +107,7 @@ function computeDownstreamWeights(coursesMap: Map<string, Course>): Map<string, 
 }
 
 export function runSimulation(
-  cohortSize = 100,
+  cohortSize = 250,
   customInterventions?: Partial<Interventions>,
   courses: Course[] = INITIAL_COURSES
 ): SimulationResult {

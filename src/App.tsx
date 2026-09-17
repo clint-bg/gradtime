@@ -15,14 +15,14 @@ export const App: React.FC = () => {
   const [interventions, setInterventions] = useState<Interventions>(getDefaultInterventions());
   const [isDeployGuideOpen, setIsDeployGuideOpen] = useState<boolean>(false);
 
-  // Compute baseline result (100 students)
+  // Compute baseline result (250 students)
   const baselineResult = useMemo(() => {
-    return runSimulation(100, getDefaultInterventions());
+    return runSimulation(250, getDefaultInterventions());
   }, []);
 
   // Compute current experiment result whenever interventions change
   const currentResult = useMemo(() => {
-    return runSimulation(100, interventions);
+    return runSimulation(250, interventions);
   }, [interventions]);
 
   const handleResetToBaseline = () => {

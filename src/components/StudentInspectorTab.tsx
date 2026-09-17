@@ -17,23 +17,45 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
 
   const coursesMap = new Map(INITIAL_COURSES.map((c) => [c.classId, c]));
 
-  // Filter student cohort
-  const filteredStudents = simulationResult.students.filter((student) => {
-    if (filterGradSem === '8' && student.graduationSemester! > 8) return false;
-    if (filterGradSem === '10' && student.graduationSemester! !== 10) return false;
-    if (filterGradSem === 'gt10' && student.graduationSemester! <= 10) return false;
+  // Sample 50 random students from the simulation cohort for inspector display
+  const sampledCohort = useMemo(() => {
+    if (simulationResult.students.length <= 50) return simulationResult.students;
 
-    if (filterWorking === 'working' && !student.isWorking) return false;
-    if (filterWorking === 'notWorking' && student.isWorking) return false;
+    const copy = [...simulationResult.students];
+    const shuffled = copy.sort((a, b) => {
+      const numA = parseInt(a.id.replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(b.id.replace(/\D/g, ''), 10) || 0;
+      const hashA = (numA * 9301 + 49297) % 233280;
+      const hashB = (numB * 9301 + 49297) % 233280;
+      return hashA - hashB;
+    });
 
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase();
-      return student.name.toLowerCase().includes(q) || student.id.toLowerCase().includes(q);
-    }
-    return true;
-  });
+    return shuffled.slice(0, 50).sort((a, b) => {
+      const numA = parseInt(a.id.replace(/\D/g, ''), 10) || 0;
+      const numB = parseInt(b.id.replace(/\D/g, ''), 10) || 0;
+      return numA - numB;
+    });
+  }, [simulationResult.students]);
 
-  const selectedStudent = simulationResult.students.find((s) => s.id === selectedStudentId) || filteredStudents[0];
+  // Filter sampled student cohort
+  const filteredStudents = useMemo(() => {
+    return sampledCohort.filter((student) => {
+      if (filterGradSem === '8' && student.graduationSemester! > 8) return false;
+      if (filterGradSem === '10' && student.graduationSemester! !== 10) return false;
+      if (filterGradSem === 'gt10' && student.graduationSemester! <= 10) return false;
+
+      if (filterWorking === 'working' && !student.isWorking) return false;
+      if (filterWorking === 'notWorking' && student.isWorking) return false;
+
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        return student.name.toLowerCase().includes(q) || student.id.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [sampledCohort, filterGradSem, filterWorking, searchQuery]);
+
+  const selectedStudent = sampledCohort.find((s) => s.id === selectedStudentId) || filteredStudents[0] || sampledCohort[0];
 
   const studentCreditsBreakdown = useMemo(() => {
     if (!selectedStudent) return { total: 0, gen: 0, rel: 0, eng: 0, emsb: 0, epsel: 0, major: 0, abetEng: 0, abetSci: 0 };
@@ -65,7 +87,7 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
           <span>Student Cohort Inspector & Transcript Trace</span>
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          Inspect individual student objects from the 100-student Monte Carlo simulation. View detailed term-by-term schedules, credit load limits, and exact bottleneck points.
+          Inspect a representative sample of 50 students from the 250-student Monte Carlo simulation cohort. View detailed term-by-term schedules, credit load limits, and exact bottleneck points.
         </p>
       </div>
 

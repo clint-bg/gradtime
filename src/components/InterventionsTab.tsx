@@ -477,7 +477,7 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 onChange={(e) => onChangeInterventions({ ...interventions, workingPercentage: parseFloat(e.target.value) })}
                 className="w-full mt-2 accent-byu-royal cursor-pointer"
               />
-              <span className="text-[11px] text-slate-500 mt-1 block">Baseline: 40% of cohort works during school</span>
+              <span className="text-[11px] text-slate-500 mt-1 block">Baseline: 30% of cohort works during school</span>
             </div>
 
             {/* Work Penalty */}
