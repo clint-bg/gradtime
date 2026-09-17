@@ -9,8 +9,8 @@
 008,121,PHYS,Freshman,3,Newtonian Mechanics,Fall,Winter,,,Major,,No,,Sci
 009,302,MATH,Sophomore,4,Math for engineers,Fall,Winter,,,Major,,No,,Sci
 010,303,MATH,Sophomore,4,Math for engineers,Fall,Winter,009,,Major,,No,,Sci
-011,111,CHEM,Freshman,4,Chemistry principles 1,Fall,Winter,,,Major,,No,,Sci
-012,112,CHEM,Freshman,3,Chemistry principles 2,Fall,Winter,011,,Major,,No,,Sci
+011,111,CHEM,Freshman,4,Chemistry principles 1,Fall,,,,Major,,No,,Sci
+012,112,CHEM,Freshman,3,Chemistry principles 2,Winter,,011,,Major,,No,,Sci
 013,285,CBE,Sophomore,0.5,Fluids lab,Winter,,"005, '017",017,Major,,No,,Eng
 014,311,CBE,Sophomore,3,"Ethics, Safety, Environment",Winter,,005,,Major,,No,,Eng
 015,345,CBE,Junior,0.5,Reactions and Materials lab,Fall,,"008, 019, 021","019, 021",Major,,No,,Eng
@@ -20,7 +20,7 @@
 019,378,CBE,Junior,3,Material science,Fall,Spring,032,,Major,,No,,Eng
 020,385,CBE,Junior,0.5,Heat and mass lab,Winter,"016, 018","016, 018","016, 018",Major,,No,,Eng
 021,386,CBE,Junior,3,Chemical reactions engineering (kinetics),Fall,,"010, 005",,Major,,No,,Eng
-022,391,CBE,Junior,1,Career skills 2,Fall,Winter,,,Major,,No,,Eng
+022,391,CBE,Junior,1,Career skills 2,Fall,Winter,,,Major,,No,,
 023,436,CBE,Senior,3,Process control,Fall,,"018, 021",,Major,,No,,Eng
 024,445,CBE,Senior,0.5,Separations and process control lab,Fall,,"023, 026","023, 026",Major,,No,,Eng
 025,451,CBE,Senior,4,Process design (capstone 1),Winter,,"019, 023, 026",,Major,,No,,Eng
@@ -28,15 +28,15 @@
 027,479,CBE,Senior,2,Unit operations lab,Fall,Winter,"035, 018, 021",,Major,,No,,Eng
 028,221,MMBio,Sophomore,3,micro or molecular biology,Fall,Winter,,,Gen,1,Yes,"029,030,031",Sci
 029,120,CELL,Freshman,3,Cell biology,Fall,Winter,,,Gen,1,Yes,"028,030,031",Sci
-030,130,BIO,Freshman,3,Biology,Fall,Winter,,,Gen,1,Yes,"028,029,031",Sci
+030,130,BIO,Freshman,4,Biology,Fall,Winter,,,Gen,1,Yes,"028,029,031",Sci
 031,100,BIO,Freshman,3,"Biology, introductory",Fall,Winter,,,Gen,1,Yes,"028,029,030",Sci
 032,357,CHEM,Sophomore,3,Industrial organic chemistry,Fall,Winter,,,Major,,No,,Sci
 033,467,CHEM,Junior,3,Physical chemistry,Fall,Winter,,,Major,,No,,Sci
-034,110,ECON,Sophomore,3,Macro economics,Fall,Winter,,,Major,,No,,Sci
+034,110,ECON,Sophomore,3,Macro economics,Fall,Winter,,,Major,,No,,
 035,316,WRTG,Junior,3,Technical communication,Fall,Winter,,,Major,,No,,
 036,121,STAT,Sophomore,3,Statistical Data analysis,Fall,Winter,,,Major,,No,,Sci
-037,353,CHEM,Junior,2,Organic chemistry lab,Fall,Winter,,,Major,,Yes,038,Sci
-038,464,CHEM,Senior,2,Physical chemistry lab,Fall,Winter,,,Major,,Yes,037,Sci
+037,353,CHEM,Junior,1,Organic chemistry lab,Fall,Winter,,,Major,,Yes,038,Sci
+038,464,CHEM,Senior,1,Physical chemistry lab,Winter,,,,Major,,Yes,037,Sci
 039,433,CBE,Senior,3,Energy Engineering,Fall,,"016, 017, 018",,Eng,,Yes,,Eng
 040,400,CEEN,Senior,3,Advanced class in CEEN. This represents multiple classes students could take,Fall,Winter,,,Eng,,Yes,,Eng
 040,500,CEEN,Senior,3,Advanced class in CEEN. This represents multiple classes students could take,Fall,Winter,,,Eng,,Yes,,Eng
