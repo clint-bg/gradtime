@@ -28,7 +28,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   const avgDiff = Math.round((currentResult.averageGraduationSemesters - baselineResult.averageGraduationSemesters) * 10) / 10;
   const isImproved = avgDiff < 0;
 
-  // Prepare chart data comparing baseline and current experiment semester distributions
+  // Prepare chart data comparing baseline and current experiment year distributions
   const allSemesters = Array.from(
     new Set([
       ...Object.keys(baselineResult.semesterDistribution).map(Number),
@@ -36,17 +36,23 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     ])
   ).sort((a, b) => a - b);
 
-  const distributionChartData = allSemesters.map((sem) => ({
-    semester: `${sem} Sem`,
-    Baseline: baselineResult.semesterDistribution[sem] || 0,
-    Experiment: currentResult.semesterDistribution[sem] || 0,
-  }));
+  const distributionChartData = allSemesters.map((sem) => {
+    const years = (sem / 2).toFixed(1);
+    return {
+      year: `${years} Yrs`,
+      semLabel: `${sem} Sem (${years} Yrs)`,
+      Baseline: baselineResult.semesterDistribution[sem] || 0,
+      Experiment: currentResult.semesterDistribution[sem] || 0,
+    };
+  });
 
-  // Prepare cumulative graduation chart data
+  // Prepare cumulative graduation chart data mapped to Years
   const cumulativeChartData = currentResult.cumulativeGraduation.map((item) => {
     const baselineItem = baselineResult.cumulativeGraduation.find((b) => b.semester === item.semester);
+    const years = (item.semester / 2).toFixed(1);
     return {
-      semester: `Sem ${item.semester}`,
+      year: `${years} Yrs`,
+      semLabel: `Sem ${item.semester} (${years} Yrs)`,
       BaselineRate: baselineItem ? baselineItem.rate : 0,
       ExperimentRate: item.rate,
     };
@@ -163,7 +169,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-800">Graduation Time Distribution</h3>
-              <p className="text-xs text-slate-500">Number of students graduating at each semester count</p>
+              <p className="text-xs text-slate-500">Number of students graduating at each year mark (2 semesters = 1 year)</p>
             </div>
             <div className="flex items-center space-x-3 text-xs">
               <span className="flex items-center"><span className="w-3 h-3 bg-slate-400 rounded-sm mr-1.5 inline-block"></span> Baseline</span>
@@ -174,10 +180,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={distributionChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="semester" tick={{ fontSize: 12, fill: '#64748B' }} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#64748B' }} />
                 <YAxis tick={{ fontSize: 12, fill: '#64748B' }} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#0F172A', color: '#fff', borderRadius: '8px', fontSize: '12px' }}
+                  labelFormatter={(label, payload) => payload[0]?.payload?.semLabel || label}
                 />
                 <Bar dataKey="Baseline" fill="#94A3B8" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Experiment" fill="#0062B8" radius={[4, 4, 0, 0]} />
@@ -191,7 +198,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-800">Cumulative Graduation Rate Curve</h3>
-              <p className="text-xs text-slate-500">% of cohort graduated by semester</p>
+              <p className="text-xs text-slate-500">% of cohort graduated by year mark (2 semesters = 1 year)</p>
             </div>
             <div className="flex items-center space-x-3 text-xs">
               <span className="flex items-center"><span className="w-3 h-0.5 bg-slate-400 mr-1.5 inline-block"></span> Baseline</span>
@@ -202,10 +209,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={cumulativeChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="semester" tick={{ fontSize: 12, fill: '#64748B' }} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#64748B' }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: '#64748B' }} unit="%" />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#0F172A', color: '#fff', borderRadius: '8px', fontSize: '12px' }}
+                  labelFormatter={(label, payload) => payload[0]?.payload?.semLabel || label}
                   formatter={(val: any) => [`${val}%`, '']}
                 />
                 <Line type="monotone" dataKey="BaselineRate" stroke="#94A3B8" strokeWidth={2} dot={{ r: 3 }} />
