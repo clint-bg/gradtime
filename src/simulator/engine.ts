@@ -41,7 +41,7 @@ export function getDefaultInterventions(): Interventions {
   return {
     offeringOverrides: {},
     relCreditsRequired: 14,
-    engCreditsRequired: 12,
+    engCreditsRequired: 9,
     emsbCreditsRequired: 4,
     epselCreditsRequired: 3,
     genEdSet: 1,
@@ -423,7 +423,7 @@ export function runSimulation(
         if (enrolledIds.includes(c.classId)) continue;
 
         // Strict Category Credit Caps:
-        // Eng: required 12 cr (interventions.engCreditsRequired)
+        // Eng: required 9 cr (interventions.engCreditsRequired)
         // EMSB: required 4 cr (interventions.emsbCreditsRequired)
         // EPSEL: required 3 cr, max 6 cr accepted
         // Rel: required 14 cr (interventions.relCreditsRequired)

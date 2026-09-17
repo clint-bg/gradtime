@@ -51,7 +51,7 @@ export interface Interventions {
   offeringOverrides: Record<string, Term[]>;
   // Credit hour requirement reductions
   relCreditsRequired: number;     // default 14
-  engCreditsRequired: number;     // default 12
+  engCreditsRequired: number;     // default 9
   emsbCreditsRequired: number;    // default 4
   epselCreditsRequired: number;   // default 3
   // General Education Set selection

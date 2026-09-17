@@ -189,7 +189,7 @@ export const DocumentationTab: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                   <div className="bg-white p-2.5 rounded-lg border border-blue-100 text-center shadow-xs">
                     <div className="text-xs text-slate-500 font-medium">Engineering Electives (Eng)</div>
-                    <div className="text-sm font-extrabold text-byu-navy">12 Credit Hours</div>
+                    <div className="text-sm font-extrabold text-byu-navy">9 Credit Hours</div>
                   </div>
                   <div className="bg-white p-2.5 rounded-lg border border-blue-100 text-center shadow-xs">
                     <div className="text-xs text-slate-500 font-medium">EMSB Electives</div>

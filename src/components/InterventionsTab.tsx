@@ -184,8 +184,10 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
               />
               <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                 <span>0 hrs</span>
+                <span>3 hrs</span>
                 <span>6 hrs</span>
-                <span>12 hrs (Default Baseline)</span>
+                <span className="font-bold text-byu-royal">9 hrs (Default Baseline)</span>
+                <span>12 hrs</span>
               </div>
             </div>
 
