@@ -27,6 +27,20 @@ function sampleNormal(mean: number, stdDev: number): number {
   return mean + num * stdDev;
 }
 
+export function isCourseOffered(c: Course, currentTerm: Term, sem: number): boolean {
+  for (const t of c.termsTaught) {
+    if (t === currentTerm) return true;
+    if (t.startsWith(currentTerm)) {
+      if (t.toLowerCase().includes('every other')) {
+        const academicYear = Math.ceil(sem / 2);
+        return academicYear % 2 === 1;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
 export function isCourseExempted(classId: string, interventions: Interventions): boolean {
   if (classId === '035' && interventions.removeWrtg316) return true;
   if (classId === '034' && interventions.removeEcon110) return true;
@@ -306,7 +320,7 @@ export function runSimulation(
             const pCourse = coursesMap.get(pId);
             if (pCourse) {
               const pPrereqsMet = pCourse.prereqs.every(reqId => student.completedCourses.has(reqId));
-              const pOffered = pCourse.termsTaught.includes(currentTerm);
+              const pOffered = isCourseOffered(pCourse, currentTerm, sem);
               if (pPrereqsMet && pOffered) {
                 return false; // Allowed concurrently!
               }
@@ -321,7 +335,7 @@ export function runSimulation(
             const lecturePrereqsMet = lectureCourse
               ? lectureCourse.prereqs.every(reqId => student.completedCourses.has(reqId))
               : false;
-            const lectureOffered = lectureCourse ? lectureCourse.termsTaught.includes(currentTerm) : false;
+            const lectureOffered = lectureCourse ? isCourseOffered(lectureCourse, currentTerm, sem) : false;
             if (lectureCompleted || (lecturePrereqsMet && lectureOffered)) {
               return false;
             }
@@ -330,7 +344,7 @@ export function runSimulation(
           return true;
         });
 
-        const isOffered = c.termsTaught.includes(currentTerm);
+        const isOffered = isCourseOffered(c, currentTerm, sem);
         const isPrereqSatisfied = missingPrereqs.length === 0;
 
         if (!isPrereqSatisfied) {
@@ -445,7 +459,7 @@ export function runSimulation(
           for (const [labId, lecId] of Object.entries(LAB_COREQUISITES)) {
             if (lecId === c.classId && !student.completedCourses.has(labId) && !enrolledIds.includes(labId)) {
               const labCourse = coursesMap.get(labId);
-              if (labCourse && labCourse.termsTaught.includes(currentTerm)) {
+              if (labCourse && isCourseOffered(labCourse, currentTerm, sem)) {
                 if (currentCredits + labCourse.credits <= student.maxCreditHours + 0.5) {
                   enrolledIds.push(labId);
                   currentCredits += labCourse.credits;
@@ -462,7 +476,7 @@ export function runSimulation(
           for (const [labId, lecId] of Object.entries(LAB_COREQUISITES)) {
             if (lecId === c.classId && !student.completedCourses.has(labId) && !enrolledIds.includes(labId)) {
               const labCourse = coursesMap.get(labId);
-              if (labCourse && labCourse.termsTaught.includes(currentTerm)) {
+              if (labCourse && isCourseOffered(labCourse, currentTerm, sem)) {
                 if (currentCredits + labCourse.credits <= student.maxCreditHours + 0.5) {
                   enrolledIds.push(labId);
                   currentCredits += labCourse.credits;

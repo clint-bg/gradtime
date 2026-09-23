@@ -1,5 +1,5 @@
 ﻿ClassID,Class Number,Department Code,"Typical year taken (Freshman, Sophmore, Junior, Senior)",Credit hours,Topic,"First Taught (Fall, Winter, Spring, Summer)","Seconde Taught (Fall, Winter, Spring, Summer)",Prereq (ClassID),Current enrollment allowed (ClassID),"Category (Major, Eng, EMSB, EPSEL, Gen, Rel)","General Education Set (1, 2)","Substitution allowed? (Yes, No)",Substitution class id,"ABET Category (Eng, Sci)"
-001,170,CBE,Freshman,2,Intro mass and energy balances,Fall,,,,Major,,No,,Eng
+001,170,CBE,Freshman,2,Intro mass and energy balances,Fall,Winter,,,Major,,No,,Eng
 002,191,CBE,Freshman,0.5,Chemical engineering introduction seminar,Fall,Winter,,,Major,,No,,
 003,263,CBE,Sophomore,2,Computational tools,Fall,Winter,"007, 001",,Major,,No,,Eng
 004,291,CBE,Sophomore,0.5,Career Skills,Fall,Winter,,,Major,,No,,
@@ -9,8 +9,8 @@
 008,121,PHYS,Freshman,3,Newtonian Mechanics,Fall,Winter,,,Major,,No,,Sci
 009,302,MATH,Sophomore,4,Math for engineers,Fall,Winter,,,Major,,No,,Sci
 010,303,MATH,Sophomore,4,Math for engineers,Fall,Winter,009,,Major,,No,,Sci
-011,111,CHEM,Freshman,4,Chemistry principles 1,Fall,,,,Major,,No,,Sci
-012,112,CHEM,Freshman,3,Chemistry principles 2,Winter,,011,,Major,,No,,Sci
+011,111,CHEM,Freshman,4,Chemistry principles 1,Fall,Winter,,,Major,,No,,Sci
+012,112,CHEM,Freshman,3,Chemistry principles 2,Fall,Winter,011,,Major,,No,,Sci
 013,285,CBE,Sophomore,0.5,Fluids lab,Winter,,"005, '017",017,Major,,No,,Eng
 014,311,CBE,Sophomore,3,"Ethics, Safety, Environment",Winter,,005,,Major,,No,,Eng
 015,345,CBE,Junior,0.5,Reactions and Materials lab,Fall,,"008, 019, 021","019, 021",Major,,No,,Eng
@@ -20,7 +20,7 @@
 019,378,CBE,Junior,3,Material science,Fall,Spring,032,,Major,,No,,Eng
 020,385,CBE,Junior,0.5,Heat and mass lab,Winter,"016, 018","016, 018","016, 018",Major,,No,,Eng
 021,386,CBE,Junior,3,Chemical reactions engineering (kinetics),Fall,,"010, 005",,Major,,No,,Eng
-022,391,CBE,Junior,1,Career skills 2,Fall,Winter,,,Major,,No,,
+022,391,CBE,Junior,1,Career skills 2,Fall,Winter,,,Major,,No,,Eng
 023,436,CBE,Senior,3,Process control,Fall,,"018, 021",,Major,,No,,Eng
 024,445,CBE,Senior,0.5,Separations and process control lab,Fall,,"023, 026","023, 026",Major,,No,,Eng
 025,451,CBE,Senior,4,Process design (capstone 1),Winter,,"019, 023, 026",,Major,,No,,Eng
@@ -28,15 +28,15 @@
 027,479,CBE,Senior,2,Unit operations lab,Fall,Winter,"035, 018, 021",,Major,,No,,Eng
 028,221,MMBio,Sophomore,3,micro or molecular biology,Fall,Winter,,,Gen,1,Yes,"029,030,031",Sci
 029,120,CELL,Freshman,3,Cell biology,Fall,Winter,,,Gen,1,Yes,"028,030,031",Sci
-030,130,BIO,Freshman,4,Biology,Fall,Winter,,,Gen,1,Yes,"028,029,031",Sci
+030,130,BIO,Freshman,3,Biology,Fall,Winter,,,Gen,1,Yes,"028,029,031",Sci
 031,100,BIO,Freshman,3,"Biology, introductory",Fall,Winter,,,Gen,1,Yes,"028,029,030",Sci
 032,357,CHEM,Sophomore,3,Industrial organic chemistry,Fall,Winter,,,Major,,No,,Sci
 033,467,CHEM,Junior,3,Physical chemistry,Fall,Winter,,,Major,,No,,Sci
-034,110,ECON,Sophomore,3,Macro economics,Fall,Winter,,,Major,,No,,
+034,110,ECON,Sophomore,3,Macro economics,Fall,Winter,,,Major,,No,,Sci
 035,316,WRTG,Junior,3,Technical communication,Fall,Winter,,,Major,,No,,
 036,121,STAT,Sophomore,3,Statistical Data analysis,Fall,Winter,,,Major,,No,,Sci
-037,353,CHEM,Junior,1,Organic chemistry lab,Fall,Winter,,,Major,,Yes,038,Sci
-038,464,CHEM,Senior,1,Physical chemistry lab,Winter,,,,Major,,Yes,037,Sci
+037,353,CHEM,Junior,2,Organic chemistry lab,Fall,Winter,,,Major,,Yes,038,Sci
+038,464,CHEM,Senior,2,Physical chemistry lab,Fall,Winter,,,Major,,Yes,037,Sci
 039,433,CBE,Senior,3,Energy Engineering,Fall,,"016, 017, 018",,Eng,,Yes,,Eng
 040,400,CEEN,Senior,3,Advanced class in CEEN. This represents multiple classes students could take,Fall,Winter,,,Eng,,Yes,,Eng
 040,500,CEEN,Senior,3,Advanced class in CEEN. This represents multiple classes students could take,Fall,Winter,,,Eng,,Yes,,Eng
@@ -44,12 +44,12 @@
 042,410,CBE,Senior,3,Petroleum Engineering,Winter,,"016, 017",,Eng,,Yes,,Eng
 043,330,GEOL,Senior,3,Engineering geology,Fall,Winter,,,EMSB,,Yes,,Eng
 044,400,CBE,Senior,1,Creative Skills in engineering,Fall,,,,Eng,,Yes,,Eng
-045,481,CBE,Senior,2,Intro to semiconductor processing,Fall,,,,Eng,,Yes,,Eng
+045,481,CBE,Senior,2,Intro to semiconductor processing,"Fall, every other year",,,,Eng,,Yes,,Eng
 046,452,ECE,Senior,1,Experiments in semiconductor processing lab,Winter,,,,Eng,,Yes,,Eng
 047,450,ECE,Senior,3,Introduction to Semiconductor devices,Fall,,,,Eng,,Yes,,Eng
 048,281,PHYS,Senior,3,Solid state physics,Winter,,,,EMSB,,Yes,,Sci
 049,540,CEEN,Senior,1,Geoenvironmental Engineering,Winter,,,,Eng,,Yes,,Eng
-050,518,CBE,Senior,3,Biomedical engineering,Winter,,"017, 018",,Eng,,Yes,,Eng
+050,518,CBE,Senior,3,Biomedical engineering,Fall,,"017, 018",,Eng,,Yes,,Eng
 051,513,CBE,Senior,3,Molecular modeling,Winter,,,,Eng,,Yes,,Eng
 052,533,CBE,Senior,3,Transport phenomena,Winter,,"018, 010",,Eng,,Yes,,Eng
 053,536,CBE,Senior,3,Machine Learning,Winter,,023,,Eng,,Yes,,Eng

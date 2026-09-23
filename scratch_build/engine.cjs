@@ -22,6 +22,7 @@ var engine_exports = {};
 __export(engine_exports, {
   getDefaultInterventions: () => getDefaultInterventions,
   isCourseExempted: () => isCourseExempted,
+  isCourseOffered: () => isCourseOffered,
   runSimulation: () => runSimulation
 });
 module.exports = __toCommonJS(engine_exports);
@@ -36,7 +37,8 @@ var INITIAL_COURSES = [
     "credits": 2,
     "topic": "Intro mass and energy balances",
     "termsTaught": [
-      "Fall"
+      "Fall",
+      "Winter"
     ],
     "prereqs": [],
     "concurrentPrereqs": [],
@@ -236,7 +238,8 @@ var INITIAL_COURSES = [
     "credits": 4,
     "topic": "Chemistry principles 1",
     "termsTaught": [
-      "Fall"
+      "Fall",
+      "Winter"
     ],
     "prereqs": [],
     "concurrentPrereqs": [],
@@ -254,6 +257,7 @@ var INITIAL_COURSES = [
     "credits": 3,
     "topic": "Chemistry principles 2",
     "termsTaught": [
+      "Fall",
       "Winter"
     ],
     "prereqs": [
@@ -482,7 +486,7 @@ var INITIAL_COURSES = [
     "genEdSets": [],
     "substitutionAllowed": false,
     "substitutionClassIds": [],
-    "abetCategory": ""
+    "abetCategory": "Eng"
   },
   {
     "classId": "023",
@@ -650,7 +654,7 @@ var INITIAL_COURSES = [
     "classNumber": "130",
     "deptCode": "BIO",
     "typicalYear": "Freshman",
-    "credits": 4,
+    "credits": 3,
     "topic": "Biology",
     "termsTaught": [
       "Fall",
@@ -750,7 +754,7 @@ var INITIAL_COURSES = [
     "genEdSets": [],
     "substitutionAllowed": false,
     "substitutionClassIds": [],
-    "abetCategory": ""
+    "abetCategory": "Sci"
   },
   {
     "classId": "035",
@@ -795,7 +799,7 @@ var INITIAL_COURSES = [
     "classNumber": "353",
     "deptCode": "CHEM",
     "typicalYear": "Junior",
-    "credits": 1,
+    "credits": 2,
     "topic": "Organic chemistry lab",
     "termsTaught": [
       "Fall",
@@ -816,9 +820,10 @@ var INITIAL_COURSES = [
     "classNumber": "464",
     "deptCode": "CHEM",
     "typicalYear": "Senior",
-    "credits": 1,
+    "credits": 2,
     "topic": "Physical chemistry lab",
     "termsTaught": [
+      "Fall",
       "Winter"
     ],
     "prereqs": [],
@@ -975,7 +980,7 @@ var INITIAL_COURSES = [
     "credits": 2,
     "topic": "Intro to semiconductor processing",
     "termsTaught": [
-      "Fall"
+      "Fall, every other year"
     ],
     "prereqs": [],
     "concurrentPrereqs": [],
@@ -1065,7 +1070,7 @@ var INITIAL_COURSES = [
     "credits": 3,
     "topic": "Biomedical engineering",
     "termsTaught": [
-      "Winter"
+      "Fall"
     ],
     "prereqs": [
       "017",
@@ -2280,6 +2285,19 @@ function sampleNormal(mean, stdDev) {
   const num = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
   return mean + num * stdDev;
 }
+function isCourseOffered(c, currentTerm, sem) {
+  for (const t of c.termsTaught) {
+    if (t === currentTerm) return true;
+    if (t.startsWith(currentTerm)) {
+      if (t.toLowerCase().includes("every other")) {
+        const academicYear = Math.ceil(sem / 2);
+        return academicYear % 2 === 1;
+      }
+      return true;
+    }
+  }
+  return false;
+}
 function isCourseExempted(classId, interventions) {
   if (classId === "035" && interventions.removeWrtg316) return true;
   if (classId === "034" && interventions.removeEcon110) return true;
@@ -2474,7 +2492,7 @@ function runSimulation(cohortSize = 250, customInterventions, courses = INITIAL_
             const pCourse = coursesMap.get(pId);
             if (pCourse) {
               const pPrereqsMet = pCourse.prereqs.every((reqId) => student.completedCourses.has(reqId));
-              const pOffered = pCourse.termsTaught.includes(currentTerm);
+              const pOffered = isCourseOffered(pCourse, currentTerm, sem);
               if (pPrereqsMet && pOffered) {
                 return false;
               }
@@ -2485,14 +2503,14 @@ function runSimulation(cohortSize = 250, customInterventions, courses = INITIAL_
             const lectureCompleted = student.completedCourses.has(lectureId2);
             const lectureCourse = coursesMap.get(lectureId2);
             const lecturePrereqsMet = lectureCourse ? lectureCourse.prereqs.every((reqId) => student.completedCourses.has(reqId)) : false;
-            const lectureOffered = lectureCourse ? lectureCourse.termsTaught.includes(currentTerm) : false;
+            const lectureOffered = lectureCourse ? isCourseOffered(lectureCourse, currentTerm, sem) : false;
             if (lectureCompleted || lecturePrereqsMet && lectureOffered) {
               return false;
             }
           }
           return true;
         });
-        const isOffered = c.termsTaught.includes(currentTerm);
+        const isOffered = isCourseOffered(c, currentTerm, sem);
         const isPrereqSatisfied = missingPrereqs.length === 0;
         if (!isPrereqSatisfied) {
           if (c.category === "Major") {
@@ -2571,7 +2589,7 @@ function runSimulation(cohortSize = 250, customInterventions, courses = INITIAL_
           for (const [labId, lecId] of Object.entries(LAB_COREQUISITES)) {
             if (lecId === c.classId && !student.completedCourses.has(labId) && !enrolledIds.includes(labId)) {
               const labCourse = coursesMap.get(labId);
-              if (labCourse && labCourse.termsTaught.includes(currentTerm)) {
+              if (labCourse && isCourseOffered(labCourse, currentTerm, sem)) {
                 if (currentCredits + labCourse.credits <= student.maxCreditHours + 0.5) {
                   enrolledIds.push(labId);
                   currentCredits += labCourse.credits;
@@ -2585,7 +2603,7 @@ function runSimulation(cohortSize = 250, customInterventions, courses = INITIAL_
           for (const [labId, lecId] of Object.entries(LAB_COREQUISITES)) {
             if (lecId === c.classId && !student.completedCourses.has(labId) && !enrolledIds.includes(labId)) {
               const labCourse = coursesMap.get(labId);
-              if (labCourse && labCourse.termsTaught.includes(currentTerm)) {
+              if (labCourse && isCourseOffered(labCourse, currentTerm, sem)) {
                 if (currentCredits + labCourse.credits <= student.maxCreditHours + 0.5) {
                   enrolledIds.push(labId);
                   currentCredits += labCourse.credits;
@@ -2771,3 +2789,10 @@ function runSimulation(cohortSize = 250, customInterventions, courses = INITIAL_
     students
   };
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  getDefaultInterventions,
+  isCourseExempted,
+  isCourseOffered,
+  runSimulation
+});

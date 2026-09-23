@@ -9,7 +9,8 @@ export const INITIAL_COURSES: Course[] = [
     "credits": 2,
     "topic": "Intro mass and energy balances",
     "termsTaught": [
-      "Fall"
+      "Fall",
+      "Winter"
     ],
     "prereqs": [],
     "concurrentPrereqs": [],
@@ -209,7 +210,8 @@ export const INITIAL_COURSES: Course[] = [
     "credits": 4,
     "topic": "Chemistry principles 1",
     "termsTaught": [
-      "Fall"
+      "Fall",
+      "Winter"
     ],
     "prereqs": [],
     "concurrentPrereqs": [],
@@ -227,6 +229,7 @@ export const INITIAL_COURSES: Course[] = [
     "credits": 3,
     "topic": "Chemistry principles 2",
     "termsTaught": [
+      "Fall",
       "Winter"
     ],
     "prereqs": [
@@ -455,7 +458,7 @@ export const INITIAL_COURSES: Course[] = [
     "genEdSets": [],
     "substitutionAllowed": false,
     "substitutionClassIds": [],
-    "abetCategory": ""
+    "abetCategory": "Eng"
   },
   {
     "classId": "023",
@@ -623,7 +626,7 @@ export const INITIAL_COURSES: Course[] = [
     "classNumber": "130",
     "deptCode": "BIO",
     "typicalYear": "Freshman",
-    "credits": 4,
+    "credits": 3,
     "topic": "Biology",
     "termsTaught": [
       "Fall",
@@ -723,7 +726,7 @@ export const INITIAL_COURSES: Course[] = [
     "genEdSets": [],
     "substitutionAllowed": false,
     "substitutionClassIds": [],
-    "abetCategory": ""
+    "abetCategory": "Sci"
   },
   {
     "classId": "035",
@@ -768,7 +771,7 @@ export const INITIAL_COURSES: Course[] = [
     "classNumber": "353",
     "deptCode": "CHEM",
     "typicalYear": "Junior",
-    "credits": 1,
+    "credits": 2,
     "topic": "Organic chemistry lab",
     "termsTaught": [
       "Fall",
@@ -789,9 +792,10 @@ export const INITIAL_COURSES: Course[] = [
     "classNumber": "464",
     "deptCode": "CHEM",
     "typicalYear": "Senior",
-    "credits": 1,
+    "credits": 2,
     "topic": "Physical chemistry lab",
     "termsTaught": [
+      "Fall",
       "Winter"
     ],
     "prereqs": [],
@@ -948,7 +952,7 @@ export const INITIAL_COURSES: Course[] = [
     "credits": 2,
     "topic": "Intro to semiconductor processing",
     "termsTaught": [
-      "Fall"
+      "Fall, every other year"
     ],
     "prereqs": [],
     "concurrentPrereqs": [],
@@ -1038,7 +1042,7 @@ export const INITIAL_COURSES: Course[] = [
     "credits": 3,
     "topic": "Biomedical engineering",
     "termsTaught": [
-      "Winter"
+      "Fall"
     ],
     "prereqs": [
       "017",
