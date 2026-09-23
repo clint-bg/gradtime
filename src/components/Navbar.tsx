@@ -117,11 +117,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="bg-white/10 hover:bg-white/20 text-white text-xs rounded-md px-2.5 py-1.5 border border-white/20 focus:outline-none focus:ring-1 focus:ring-byu-tan cursor-pointer"
             >
               <option value="" disabled className="text-gray-800">⚡ Load Preset Scenario...</option>
-              <option value="baseline" className="text-gray-800">Current Baseline (~10.0 Semesters)</option>
-              <option value="doubleOfferings" className="text-gray-800">Offer Core CBE Classes Fall & Winter</option>
-              <option value="reduceElectives" className="text-gray-800">Reduce Elective Credits (Eng & Rel)</option>
-              <option value="relaxPrereqs" className="text-gray-800">Concurrent Prerequisite Taking</option>
-              <option value="higherCreditLoad" className="text-gray-800">Higher Student Credit Load (Mean 16.0)</option>
+              <option value="baseline" className="text-gray-800">Baseline</option>
+              <option value="gen2" className="text-gray-800">New General Ed. Req. (Gen 2)</option>
+              <option value="noEmsbEconGen2" className="text-gray-800">No EMSB or ECON with Gen2</option>
+              <option value="springSummer" className="text-gray-800">Spring Summer Enrollment for Religion/Gen</option>
+              <option value="allOfAbove" className="text-gray-800">All of the Above</option>
             </select>
 
             <button

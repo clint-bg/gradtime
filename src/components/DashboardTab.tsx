@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -12,7 +12,8 @@ import {
   Line
 } from 'recharts';
 import { SimulationResult } from '../simulator/types';
-import { Clock, TrendingDown, Award, AlertTriangle, ArrowRight, Layers, CheckCircle2 } from 'lucide-react';
+import { INITIAL_COURSES } from '../data/classDetailsData';
+import { Clock, Award, ArrowRight, CheckCircle2, BookOpen, Layers, Check } from 'lucide-react';
 
 interface DashboardTabProps {
   baselineResult: SimulationResult;
@@ -58,6 +59,145 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     };
   });
 
+  // Compute student credit hour summary statistics per category across cohort
+  const courseMap = useMemo(() => new Map(INITIAL_COURSES.map((c) => [c.classId, c])), []);
+
+  const computeCohortCreditSummary = useMemo(() => {
+    return (result: SimulationResult) => {
+      const totals: number[] = [];
+      const major: number[] = [];
+      const genEd: number[] = [];
+      const rel: number[] = [];
+      const engElec: number[] = [];
+      const emsb: number[] = [];
+      const epsel: number[] = [];
+      const abetEng: number[] = [];
+      const abetSci: number[] = [];
+
+      result.students.forEach((student) => {
+        let t = 0, m = 0, g = 0, r = 0, eng = 0, em = 0, ep = 0, abE = 0, abS = 0;
+
+        student.completedCourses.forEach((cId) => {
+          const c = courseMap.get(cId);
+          if (!c) return;
+          const cr = c.credits;
+          t += cr;
+
+          if (c.category === 'Major') m += cr;
+          else if (c.category === 'Gen') g += cr;
+          else if (c.category === 'Rel') r += cr;
+          else if (c.category === 'Eng') eng += cr;
+          else if (c.category === 'EMSB') em += cr;
+          else if (c.category === 'EPSEL') ep += cr;
+
+          if (c.abetCategory === 'Eng') abE += cr;
+          else if (c.abetCategory === 'Sci') abS += cr;
+        });
+
+        totals.push(t);
+        major.push(m);
+        genEd.push(g);
+        rel.push(r);
+        engElec.push(eng);
+        emsb.push(em);
+        epsel.push(ep);
+        abetEng.push(abE);
+        abetSci.push(abS);
+      });
+
+      const getStats = (arr: number[]) => {
+        if (arr.length === 0) return { min: 0, max: 0, avg: 0 };
+        const min = Math.min(...arr);
+        const max = Math.max(...arr);
+        const sum = arr.reduce((a, b) => a + b, 0);
+        const avg = Number((sum / arr.length).toFixed(1));
+        return { min, max, avg };
+      };
+
+      return {
+        totalCredits: getStats(totals),
+        majorHours: getStats(major),
+        genEd: getStats(genEd),
+        religion: getStats(rel),
+        engElectives: getStats(engElec),
+        emsb: getStats(emsb),
+        epsel: getStats(epsel),
+        abetEng: getStats(abetEng),
+        abetSci: getStats(abetSci),
+      };
+    };
+  }, [courseMap]);
+
+  const baselineSummary = useMemo(() => computeCohortCreditSummary(baselineResult), [computeCohortCreditSummary, baselineResult]);
+  const experimentSummary = useMemo(() => computeCohortCreditSummary(currentResult), [computeCohortCreditSummary, currentResult]);
+
+  const categoryRows = [
+    {
+      key: 'totalCredits',
+      label: 'Total Graduation Credits',
+      desc: 'All completed coursework required for degree completion',
+      bStats: baselineSummary.totalCredits,
+      eStats: experimentSummary.totalCredits,
+      highlight: true,
+    },
+    {
+      key: 'majorHours',
+      label: 'Major Core Hours (CBE)',
+      desc: 'Chemical Engineering major requirements (balances, transport, kinetics, labs)',
+      bStats: baselineSummary.majorHours,
+      eStats: experimentSummary.majorHours,
+    },
+    {
+      key: 'genEd',
+      label: 'General Education (Gen Ed)',
+      desc: 'University general education (writing, history, civil, biology)',
+      bStats: baselineSummary.genEd,
+      eStats: experimentSummary.genEd,
+    },
+    {
+      key: 'religion',
+      label: 'Religion Requirements',
+      desc: 'University religion & cornerstone coursework',
+      bStats: baselineSummary.religion,
+      eStats: experimentSummary.religion,
+    },
+    {
+      key: 'engElectives',
+      label: 'Engineering Electives (Eng)',
+      desc: 'Advanced technical engineering electives (300+ level)',
+      bStats: baselineSummary.engElectives,
+      eStats: experimentSummary.engElectives,
+    },
+    {
+      key: 'emsb',
+      label: 'EMSB Electives',
+      desc: 'Engineering, math, science, and business category electives',
+      bStats: baselineSummary.emsb,
+      eStats: experimentSummary.emsb,
+    },
+    {
+      key: 'epsel',
+      label: 'EPSEL Technical Electives',
+      desc: 'Engineering project, senior elective, & research credits',
+      bStats: baselineSummary.epsel,
+      eStats: experimentSummary.epsel,
+    },
+    {
+      key: 'abetEng',
+      label: 'ABET Engineering Hours',
+      desc: 'Total ABET-accredited engineering topic credits',
+      bStats: baselineSummary.abetEng,
+      eStats: experimentSummary.abetEng,
+    },
+    {
+      key: 'abetSci',
+      label: 'ABET Math & Science Hours',
+      desc: 'Total ABET-accredited math & basic science credits',
+      bStats: baselineSummary.abetSci,
+      eStats: experimentSummary.abetSci,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Top Banner / Scenario Status */}
@@ -90,8 +230,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Cards (3 Cards Grid) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Average Semesters */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center justify-between text-slate-500">
@@ -139,25 +279,6 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           </div>
           <div className="mt-2 text-xs text-slate-500">
             <span>Baseline: <strong className="text-slate-700">{baselineResult.tenSemesterGradRate}%</strong> of cohort</span>
-          </div>
-        </div>
-
-        {/* Top Bottleneck Course */}
-        <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold uppercase tracking-wider">Top Bottleneck</span>
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-          </div>
-          <div className="mt-2">
-            <span className="text-lg font-bold text-slate-900 truncate block">
-              {currentResult.bottlenecks[0] ? currentResult.bottlenecks[0].courseId : 'None'}
-            </span>
-            <span className="text-xs text-slate-500 truncate block">
-              {currentResult.bottlenecks[0] ? currentResult.bottlenecks[0].courseName : 'No bottlenecks detected'}
-            </span>
-          </div>
-          <div className="mt-2 text-xs text-amber-700 font-medium">
-            {currentResult.bottlenecks[0] ? `${currentResult.bottlenecks[0].affectedStudentsCount} students delayed` : ''}
           </div>
         </div>
       </div>
@@ -224,69 +345,107 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         </div>
       </div>
 
-      {/* Bottleneck Analysis Table */}
+      {/* STUDENT CREDIT HOUR & CURRICULUM SUMMARY SECTION */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50">
           <div>
             <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
-              <Layers className="h-5 w-5 text-byu-navy" />
-              <span>Curriculum Bottleneck Identification & Impact</span>
+              <BookOpen className="h-5 w-5 text-byu-royal" />
+              <span>Student Credit Hour & Curriculum Breakdown Summary</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Courses that delayed student progression due to term offering constraints or prerequisite dependencies.
+              Average completed credit hours and full min–max range per student across curriculum categories (N = {currentResult.cohortSize} students).
             </p>
           </div>
-          <span className="text-xs font-medium text-slate-500">
-            {currentResult.bottlenecks.length} Bottlenecks Identified
-          </span>
+
+          <div className="flex items-center space-x-2 text-xs font-semibold self-start md:self-auto">
+            <span className="bg-slate-200 text-slate-700 px-3 py-1 rounded-md">
+              Baseline Avg: <strong>{baselineSummary.totalCredits.avg} cr</strong> ({baselineSummary.totalCredits.min}–{baselineSummary.totalCredits.max} cr)
+            </span>
+            <span className="bg-byu-royal text-white px-3 py-1 rounded-md shadow-2xs">
+              Experiment Avg: <strong>{experimentSummary.totalCredits.avg} cr</strong> ({experimentSummary.totalCredits.min}–{experimentSummary.totalCredits.max} cr)
+            </span>
+          </div>
         </div>
 
-        {currentResult.bottlenecks.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 text-sm">
-            🎉 No major course bottlenecks detected in this scenario!
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
-                <tr>
-                  <th className="px-5 py-3">Course Code & Title</th>
-                  <th className="px-5 py-3">Category</th>
-                  <th className="px-5 py-3">Affected Students</th>
-                  <th className="px-5 py-3">Times Delayed</th>
-                  <th className="px-5 py-3">Primary Bottleneck Cause</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {currentResult.bottlenecks.slice(0, 8).map((b, idx) => (
-                  <tr key={b.courseId} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3 font-semibold text-slate-900">
-                      {b.courseName}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                        b.category === 'Major' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        {b.category}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th className="px-5 py-3">Curriculum Category</th>
+                <th className="px-5 py-3">Baseline Average</th>
+                <th className="px-5 py-3">Baseline Range (Min–Max)</th>
+                <th className="px-5 py-3">Experiment Average</th>
+                <th className="px-5 py-3">Experiment Range (Min–Max)</th>
+                <th className="px-5 py-3 text-right">Net Change</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {categoryRows.map((row) => {
+                const diff = Number((row.eStats.avg - row.bStats.avg).toFixed(1));
+                const isDecreased = diff < 0;
+                const isIncreased = diff > 0;
+
+                return (
+                  <tr
+                    key={row.key}
+                    className={`transition-colors ${
+                      row.highlight
+                        ? 'bg-blue-50/40 font-bold hover:bg-blue-50/70'
+                        : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <td className="px-5 py-3.5">
+                      <span className={`block font-bold ${row.highlight ? 'text-byu-navy text-sm' : 'text-slate-900'}`}>
+                        {row.label}
                       </span>
+                      <span className="text-[11px] font-normal text-slate-500">{row.desc}</span>
                     </td>
-                    <td className="px-5 py-3 text-slate-700 font-medium">
-                      {b.affectedStudentsCount} / {currentResult.cohortSize} students
+
+                    {/* Baseline Avg */}
+                    <td className="px-5 py-3.5 font-bold text-slate-800">
+                      {row.bStats.avg} cr
                     </td>
-                    <td className="px-5 py-3">
-                      <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">
-                        {b.timesDelayed} delays
-                      </span>
+
+                    {/* Baseline Range */}
+                    <td className="px-5 py-3.5 text-slate-600 font-medium">
+                      {row.bStats.min} – {row.bStats.max} cr
                     </td>
-                    <td className="px-5 py-3 text-slate-600 text-xs">
-                      {b.primaryReason}
+
+                    {/* Experiment Avg */}
+                    <td className="px-5 py-3.5 font-extrabold text-byu-royal">
+                      {row.eStats.avg} cr
+                    </td>
+
+                    {/* Experiment Range */}
+                    <td className="px-5 py-3.5 text-slate-700 font-medium">
+                      {row.eStats.min} – {row.eStats.max} cr
+                    </td>
+
+                    {/* Net Change */}
+                    <td className="px-5 py-3.5 text-right font-extrabold">
+                      {diff === 0 ? (
+                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[11px]">
+                          0.0 cr
+                        </span>
+                      ) : (
+                        <span
+                          className={`px-2.5 py-1 rounded text-[11px] font-extrabold ${
+                            isDecreased
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-amber-100 text-amber-800 border border-amber-300'
+                          }`}
+                        >
+                          {isDecreased ? `📉 ${diff} cr` : `📈 +${diff} cr`}
+                        </span>
+                      )}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
