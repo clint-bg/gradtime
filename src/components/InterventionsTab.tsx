@@ -80,8 +80,6 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Fall-only courses offered in winter too</span>
               <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  { id: '001', code: 'CBE 170', name: 'Intro Mass & Energy' },
-                  { id: '005', code: 'CBE 273', name: 'Material & Energy Balances' },
                   { id: '015', code: 'CBE 345', name: 'Reactions & Materials Lab (0.5 cr)' },
                   { id: '021', code: 'CBE 386', name: 'Chemical Reactions Eng' },
                   { id: '023', code: 'CBE 436', name: 'Process Control' },

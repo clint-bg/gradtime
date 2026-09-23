@@ -294,7 +294,7 @@ export const DocumentationTab: React.FC = () => {
                     <span>Course Offering Frequencies</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Test expanding Fall-only core courses (CBE 170, 273, 345, 386, 436, 445, 476) or Winter-only courses (CBE 285, 311, 374, 376, 385, 451) to be offered in both Fall & Winter terms.
+                    Test expanding Fall-only core courses (CBE 345, 386, 436, 445, 476) or Winter-only courses (CBE 285, 311, 374, 376, 385, 451) to be offered in both Fall & Winter terms.
                   </p>
                 </div>
 
