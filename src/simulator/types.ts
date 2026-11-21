@@ -39,6 +39,11 @@ export interface Student {
   effectiveCreditLimit: number;
   currentSemester: number;
   currentTerm: Term;
+  incomingApCourses: string[];
+  springSummerBudget: number;
+  springSummerUsed: number;
+  parityFlipAfterSem?: number;
+  retakenCourses: string[];
   completedCourses: Set<string>;
   failedPrereqs: Array<{ courseId: string; missingPrereqId: string; semester: number }>;
   isGraduated: boolean;
@@ -51,7 +56,7 @@ export interface Interventions {
   offeringOverrides: Record<string, Term[]>;
   // Credit hour requirement reductions
   relCreditsRequired: number;     // default 14
-  engCreditsRequired: number;     // default 9
+  engCreditsRequired: number;     // default 12 (includes EPSEL credits)
   emsbCreditsRequired: number;    // default 4
   epselCreditsRequired: number;   // default 3
   // General Education Set selection
@@ -68,11 +73,15 @@ export interface Interventions {
   removeStat121: boolean;        // default false (remove STAT 121)
   removeCbeSeminars: boolean;    // default false (remove CBE 191, 291, 391)
   // Student population parameters
-  populationMeanCredits: number; // default 14.5
-  populationStdDevCredits: number; // default 1.8
+  populationMeanCredits: number; // default 17.0 (yields ~14.6 cr/sem realized, matching 14.7 cr/sem observed)
+  populationStdDevCredits: number; // default 1.6 (empirical per-student std dev: 1.61)
   workingPercentage: number;     // default 30% (0.3)
   workPenaltyCredits: number;    // default 2.5 credits
-  enableSpringSummer: boolean;   // default false
+  enableSpringSummer: boolean;   // default false (when true, 100% universal Spring/Summer policy)
+  springSummerParticipationRate: number; // default 0.74 (empirical 74.2% of graduating seniors)
+  enableApTransferCredits: boolean; // default true (empirical incoming AP/transfer credit profiles)
+  enableEmpiricalRetakes: boolean;  // default true (empirical DFW/retake rates from studentdata_anon.csv)
+  enableStopOutParityFlips: boolean; // default true (empirical mission/co-op term parity flips)
   // Prerequisite Relaxation Interventions
   prereqMode: 'strict' | 'concurrentCore' | 'waiveMathChem' | 'none'; // default 'strict'
   relaxCbe273To374: boolean;     // default false

@@ -69,7 +69,10 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
       else if (c.category === 'Rel') rel += c.credits;
       else if (c.category === 'Eng') eng += c.credits;
       else if (c.category === 'EMSB') emsb += c.credits;
-      else if (c.category === 'EPSEL') epsel += c.credits;
+      else if (c.category === 'EPSEL') {
+        epsel += c.credits;
+        eng += c.credits;
+      }
       else if (c.category === 'Major') major += c.credits;
 
       if (c.abetCategory === 'Eng') abetEng += c.credits;
@@ -204,6 +207,19 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                       Effective Capacity: <strong>{selectedStudent.effectiveCreditLimit} hrs/sem</strong>
                     </span>
+                    {selectedStudent.parityFlipAfterSem !== undefined && (
+                      <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-amber-900 font-semibold text-[11px]">
+                        Leave Parity Flip after Sem {selectedStudent.parityFlipAfterSem}
+                      </span>
+                    )}
+                    {selectedStudent.retakenCourses && selectedStudent.retakenCourses.length > 0 && (
+                      <span className="px-2 py-0.5 rounded bg-rose-100 border border-rose-300 text-rose-900 font-semibold text-[11px]">
+                        Retakes: {selectedStudent.retakenCourses.map(cid => {
+                          const c = coursesMap.get(cid);
+                          return c ? `${c.deptCode} ${c.classNumber}` : cid;
+                        }).join(', ')}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -273,8 +289,35 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
               </h4>
 
               <div className="space-y-4">
-                {selectedStudent.semesterHistory.map((semLog) => (
-                  <div key={semLog.semester} className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                {selectedStudent.incomingApCourses && selectedStudent.incomingApCourses.length > 0 && (
+                  <div className="border border-emerald-200 rounded-lg p-3.5 bg-emerald-50/60">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="bg-emerald-700 text-white text-xs font-bold px-2.5 py-1 rounded">
+                        Incoming AP / Transfer Credit
+                      </span>
+                      <span className="text-xs font-bold text-emerald-800">
+                        {selectedStudent.incomingApCourses.reduce((sum, cid) => sum + (coursesMap.get(cid)?.credits || 0), 0)} cr bypassed prior to Sem 1
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedStudent.incomingApCourses.map((cid) => {
+                        const c = coursesMap.get(cid);
+                        if (!c) return null;
+                        return (
+                          <span
+                            key={cid}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-emerald-200 text-xs font-semibold text-emerald-900"
+                          >
+                            <span>{c.deptCode} {c.classNumber}</span>
+                            <span className="text-[10px] text-emerald-600">({c.credits} cr)</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {selectedStudent.semesterHistory.map((semLog, idx) => (
+                  <div key={`${semLog.semester}-${semLog.term}-${idx}`} className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
                     <div className="flex items-center justify-between border-b border-slate-200 pb-2 mb-3">
                       <div className="flex items-center space-x-2">
                         <span className="bg-byu-navy text-white text-xs font-bold px-2.5 py-1 rounded">

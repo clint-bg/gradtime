@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { SimulationResult, Student, Course } from '../simulator/types';
 import { INITIAL_COURSES } from '../data/classDetailsData';
-import { Network, CheckCircle2, AlertCircle, ArrowRight, GitBranch, Layers, Check, Filter, User, BarChart3, Info, X, ChevronRight, Clock, BookOpen } from 'lucide-react';
+import { ACTUAL_COHORT_PATHWAY_STATS, ActualCoursePathwayStat } from '../data/empiricalApProfiles';
+import { Network, CheckCircle2, AlertCircle, ArrowRight, GitBranch, Layers, Check, Filter, User, BarChart3, Info, X, ChevronRight, Clock, BookOpen, History } from 'lucide-react';
 
 interface PrereqMapTabProps {
   simulationResult: SimulationResult;
@@ -31,7 +32,42 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
     simulationResult.students[0] ? simulationResult.students[0].id : ''
   );
   const [cohortFilter, setCohortFilter] = useState<'all' | 'ontime' | 'delayed'>('all');
+  const [showActualOverlay, setShowActualOverlay] = useState<boolean>(true);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>('017'); // Default highlight CBE 374
+
+  const actualCohortGroup = ACTUAL_COHORT_PATHWAY_STATS[cohortFilter];
+
+  const renderActualComparison = (
+    cId: string,
+    primaryKey: keyof Pick<ActualCoursePathwayStat, 'freshmanPct' | 'sophomorePct' | 'juniorPct' | 'seniorPct' | 'superSeniorPct'>,
+    primaryLabel: string,
+    secondaryKey?: keyof Pick<ActualCoursePathwayStat, 'freshmanPct' | 'sophomorePct' | 'juniorPct' | 'seniorPct' | 'superSeniorPct' | 'apSkippedPct'>,
+    secondaryLabel?: string
+  ) => {
+    if (!showActualOverlay) return null;
+    const actual = actualCohortGroup.courses[cId];
+    if (!actual) return null;
+    const pVal = actual[primaryKey];
+    const sVal = secondaryKey ? actual[secondaryKey] : 0;
+
+    return (
+      <div className="mt-2 pt-2 border-t border-amber-200/70 bg-amber-50/50 -mx-3 -mb-3 px-3 py-2 rounded-b-xl">
+        <div className="flex items-center justify-between text-[10px] font-bold text-amber-900">
+          <span>Actual (n={actualCohortGroup.n})</span>
+          <span>
+            {pVal}% {primaryLabel}
+            {secondaryKey && sVal > 0 ? ` • ${sVal}% ${secondaryLabel}` : ''}
+          </span>
+        </div>
+        <div className="w-full bg-amber-100 h-1.5 rounded-full mt-1 overflow-hidden flex">
+          <div className="bg-amber-500 h-full" style={{ width: `${pVal}%` }}></div>
+          {secondaryKey && secondaryKey !== 'apSkippedPct' && sVal > 0 && (
+            <div className="bg-rose-500 h-full" style={{ width: `${sVal}%` }}></div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   const coursesMap = useMemo(() => new Map<string, Course>(INITIAL_COURSES.map((c) => [c.classId, c])), []);
 
@@ -344,36 +380,49 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 text-xs font-semibold">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                <button
+                  onClick={() => setCohortFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    cohortFilter === 'all'
+                      ? 'bg-byu-royal text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  All Students (100%)
+                </button>
+                <button
+                  onClick={() => setCohortFilter('ontime')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    cohortFilter === 'ontime'
+                      ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  On-Time 4-Yr Path ({Math.round((simulationResult.students.filter(s => s.graduationSemester <= 8).length / simulationResult.students.length) * 100)}%)
+                </button>
+                <button
+                  onClick={() => setCohortFilter('delayed')}
+                  className={`px-3 py-1.5 rounded-lg transition-colors ${
+                    cohortFilter === 'delayed'
+                      ? 'bg-amber-600 text-white font-bold shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  Working / Extended 5-Yr Path ({Math.round((simulationResult.students.filter(s => s.graduationSemester > 8).length / simulationResult.students.length) * 100)}%)
+                </button>
+              </div>
               <button
-                onClick={() => setCohortFilter('all')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  cohortFilter === 'all'
-                    ? 'bg-byu-royal text-white font-bold shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
+                onClick={() => setShowActualOverlay((prev) => !prev)}
+                className={`px-3 py-2 rounded-xl border text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                  showActualOverlay
+                    ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
+                    : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                All Students (100%)
-              </button>
-              <button
-                onClick={() => setCohortFilter('ontime')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  cohortFilter === 'ontime'
-                    ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                On-Time 4-Yr Path ({Math.round((simulationResult.students.filter(s => s.graduationSemester <= 8).length / simulationResult.students.length) * 100)}%)
-              </button>
-              <button
-                onClick={() => setCohortFilter('delayed')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  cohortFilter === 'delayed'
-                    ? 'bg-amber-600 text-white font-bold shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                Working / Extended 5-Yr Path ({Math.round((simulationResult.students.filter(s => s.graduationSemester > 8).length / simulationResult.students.length) * 100)}%)
+                <History className="h-3.5 w-3.5" />
+                <span>Actual Pathways (n={actualCohortGroup.n}): {showActualOverlay ? 'On' : 'Off'}</span>
               </button>
             </div>
           </div>
@@ -410,13 +459,14 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                       <div className="flex items-center justify-between font-bold text-xs">
                         <span className="text-blue-700 font-black">CBE 170</span>
                         <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold">
-                          {cohortCourseStats['001'].freshmanPct}% Sem 1
+                          {cohortCourseStats['001'].freshmanPct}% Fresh
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Intro Mass & Energy</div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
                         <div className="bg-blue-600 h-full rounded-full" style={{ width: `${cohortCourseStats['001'].freshmanPct}%` }}></div>
                       </div>
+                      {renderActualComparison('001', 'freshmanPct', 'Fresh', 'apSkippedPct', 'AP/Tr')}
                     </div>
                   );
                 })()}
@@ -444,11 +494,12 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Calculus I</div>
+                      {renderActualComparison('006', 'freshmanPct', 'Fresh', 'apSkippedPct', 'AP')}
                     </div>
                   );
                 })()}
 
-                {/* Course Card: CHEM 105 */}
+                {/* Course Card: CHEM 105 / 111 */}
                 {cohortCourseStats['011'] && (() => {
                   const rel = getNodeRelationStatus('011');
                   return (
@@ -465,12 +516,13 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                       {rel === 'dependent' && <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-xs">Dependent</span>}
 
                       <div className="flex items-center justify-between font-bold text-xs">
-                        <span className="text-slate-900 font-extrabold">CHEM 105</span>
+                        <span className="text-slate-900 font-extrabold">CHEM 111 / 105</span>
                         <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">
-                          100% Sem 1
+                          {cohortCourseStats['011'].freshmanPct}% Fresh
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">General Chemistry I</div>
+                      {renderActualComparison('011', 'freshmanPct', 'Fresh', 'apSkippedPct', 'AP')}
                     </div>
                   );
                 })()}
@@ -507,10 +559,11 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                       <div className="flex items-center justify-between font-bold text-xs">
                         <span className="text-purple-700 font-black">CBE 273</span>
                         <span className="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded font-bold">
-                          {cohortCourseStats['005'].sophomorePct}% Sem 3
+                          {cohortCourseStats['005'].sophomorePct}% Soph
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Material & Energy Balances</div>
+                      {renderActualComparison('005', 'sophomorePct', 'Soph', 'freshmanPct', 'Fresh')}
                     </div>
                   );
                 })()}
@@ -534,10 +587,11 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                       <div className="flex items-center justify-between font-bold text-xs">
                         <span className="text-slate-900 font-extrabold">CBE 263</span>
                         <span className="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded font-bold">
-                          100% Soph
+                          {cohortCourseStats['003'].sophomorePct}% Soph
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Computational Tools</div>
+                      {renderActualComparison('003', 'sophomorePct', 'Soph', 'freshmanPct', 'Fresh')}
                     </div>
                   );
                 })()}
@@ -574,6 +628,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                           ⚡ {cohortCourseStats['017'].juniorPct}% Deferred to Junior W
                         </div>
                       )}
+                      {renderActualComparison('017', 'sophomorePct', 'Soph W', 'juniorPct', 'Jr W')}
                     </div>
                   );
                 })()}
@@ -614,6 +669,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Thermodynamics</div>
+                      {renderActualComparison('016', 'juniorPct', 'Jr W', 'seniorPct', 'Sr W')}
                     </div>
                   );
                 })()}
@@ -641,6 +697,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Kinetics & Reactor Design</div>
+                      {renderActualComparison('021', 'juniorPct', 'Jr F', 'seniorPct', 'Sr F')}
                     </div>
                   );
                 })()}
@@ -677,6 +734,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                           ⚠️ {cohortCourseStats['018'].seniorPct}% Delayed to Senior W
                         </div>
                       )}
+                      {renderActualComparison('018', 'juniorPct', 'Jr W', 'seniorPct', 'Sr W')}
                     </div>
                   );
                 })()}
@@ -717,6 +775,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Process Control</div>
+                      {renderActualComparison('023', 'seniorPct', 'Sr F', 'superSeniorPct', 'Sem 9+')}
                     </div>
                   );
                 })()}
@@ -744,6 +803,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                         </span>
                       </div>
                       <div className="text-xs font-semibold text-slate-800 mt-0.5">Separations</div>
+                      {renderActualComparison('026', 'seniorPct', 'Sr F', 'superSeniorPct', 'Sem 9+')}
                     </div>
                   );
                 })()}
@@ -780,6 +840,7 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                           ⚠️ {cohortCourseStats['025'].superSeniorPct}% Graduate in Sem 10+
                         </div>
                       )}
+                      {renderActualComparison('025', 'seniorPct', 'Sem 8', 'superSeniorPct', 'Sem 9+')}
                     </div>
                   );
                 })()}
@@ -859,6 +920,14 @@ export const PrereqMapTab: React.FC<PrereqMapTabProps> = ({ simulationResult }) 
                         <span className="text-slate-600">Working Student Avg Sem:</span>
                         <span className="font-extrabold text-amber-700">Semester {selectedCourseDetails.stats.workingAvgSemester}</span>
                       </div>
+                      {showActualOverlay && actualCohortGroup.courses[selectedCourseDetails.course.classId] && (
+                        <div className="flex items-center justify-between bg-amber-50 p-2 rounded-lg border border-amber-300">
+                          <span className="text-amber-900 font-semibold">Actual Historical Avg (n={actualCohortGroup.n}):</span>
+                          <span className="font-extrabold text-amber-900">
+                            Semester {actualCohortGroup.courses[selectedCourseDetails.course.classId].avgSemester}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

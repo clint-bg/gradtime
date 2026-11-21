@@ -9,6 +9,14 @@ import {
   StudentSemesterLog
 } from './types';
 import { INITIAL_COURSES } from '../data/classDetailsData';
+import {
+  EMPIRICAL_AP_PROFILES,
+  EMPIRICAL_SS_PARTICIPATION_RATE,
+  EMPIRICAL_SS_TERM_BUDGETS,
+  EMPIRICAL_RETAKE_RATES,
+  EMPIRICAL_PARITY_FLIP_RATE,
+  EMPIRICAL_PARITY_FLIP_AFTER_SEMS,
+} from '../data/empiricalApProfiles';
 
 // Lab course -> corresponding lecture course mapping (can be taken concurrently or afterwards)
 const LAB_COREQUISITES: Record<string, string> = {
@@ -55,7 +63,7 @@ export function getDefaultInterventions(): Interventions {
   return {
     offeringOverrides: {},
     relCreditsRequired: 14,
-    engCreditsRequired: 9,
+    engCreditsRequired: 12,
     emsbCreditsRequired: 4,
     epselCreditsRequired: 3,
     genEdSet: 1,
@@ -67,11 +75,15 @@ export function getDefaultInterventions(): Interventions {
     removeChem464: false,
     removeStat121: false,
     removeCbeSeminars: false,
-    populationMeanCredits: 14.5,
-    populationStdDevCredits: 1.8,
+    populationMeanCredits: 17.0,
+    populationStdDevCredits: 1.6,
     workingPercentage: 0.30,
     workPenaltyCredits: 2.5,
     enableSpringSummer: false,
+    springSummerParticipationRate: EMPIRICAL_SS_PARTICIPATION_RATE,
+    enableApTransferCredits: true,
+    enableEmpiricalRetakes: true,
+    enableStopOutParityFlips: true,
     prereqMode: 'strict',
     relaxCbe273To374: false,
     relaxCbe374To376: false,
@@ -223,6 +235,36 @@ export function runSimulation(
     const workCreditPenalty = isWorking ? interventions.workPenaltyCredits : 0;
     const effectiveCreditLimit = Math.max(12, Math.round((maxCreditHours - workCreditPenalty) * 2) / 2);
 
+    // Sample empirical incoming AP / transfer credit profile (preserving joint correlations)
+    let incomingApCourses: string[] = [];
+    if (interventions.enableApTransferCredits && EMPIRICAL_AP_PROFILES.length > 0) {
+      const sampledProfile = EMPIRICAL_AP_PROFILES[Math.floor(Math.random() * EMPIRICAL_AP_PROFILES.length)];
+      const activeGenSetStr = interventions.genEdSet.toString();
+      incomingApCourses = sampledProfile.filter(cid => {
+        const course = coursesMap.get(cid);
+        if (!course) return false;
+        if (isCourseExempted(cid, interventions)) return false;
+        if (course.category === 'Gen' && course.genEdSets.length > 0 && !course.genEdSets.includes(activeGenSetStr)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    // Sample empirical Spring / Summer term budget
+    let springSummerBudget = 0;
+    if (interventions.enableSpringSummer) {
+      springSummerBudget = 99; // Universal policy: eligible every summer
+    } else if (Math.random() < interventions.springSummerParticipationRate) {
+      springSummerBudget = EMPIRICAL_SS_TERM_BUDGETS[Math.floor(Math.random() * EMPIRICAL_SS_TERM_BUDGETS.length)];
+    }
+
+    // Sample empirical stop-out / mission / co-op term parity flip
+    let parityFlipAfterSem: number | undefined = undefined;
+    if (interventions.enableStopOutParityFlips && Math.random() < EMPIRICAL_PARITY_FLIP_RATE) {
+      parityFlipAfterSem = EMPIRICAL_PARITY_FLIP_AFTER_SEMS[Math.floor(Math.random() * EMPIRICAL_PARITY_FLIP_AFTER_SEMS.length)];
+    }
+
     students.push({
       id: `STD-${1000 + i}`,
       name: `Student ${i}`,
@@ -234,7 +276,12 @@ export function runSimulation(
       effectiveCreditLimit,
       currentSemester: 1,
       currentTerm: 'Fall',
-      completedCourses: new Set<string>(),
+      incomingApCourses,
+      springSummerBudget,
+      springSummerUsed: 0,
+      parityFlipAfterSem,
+      retakenCourses: [],
+      completedCourses: new Set<string>(incomingApCourses),
       failedPrereqs: [],
       isGraduated: false,
       semesterHistory: [],
@@ -254,8 +301,9 @@ export function runSimulation(
       activeStudents++;
 
       student.currentSemester = sem;
-      // Term cycle: odd semesters = Fall, even semesters = Winter
-      const currentTerm: Term = (sem % 2 === 1) ? 'Fall' : 'Winter';
+      // Term cycle: odd semesters = Fall, even semesters = Winter (shifted if student returned off-cycle from a leave/mission/co-op)
+      const isParityFlipped = student.parityFlipAfterSem !== undefined && sem > student.parityFlipAfterSem;
+      const currentTerm: Term = ((sem + (isParityFlipped ? 1 : 0)) % 2 === 1) ? 'Fall' : 'Winter';
       student.currentTerm = currentTerm;
 
       // Calculate completed credits per category so far
@@ -270,7 +318,10 @@ export function runSimulation(
         if (c.category === 'Rel') completedRelCredits += c.credits;
         else if (c.category === 'Eng') completedEngCredits += c.credits;
         else if (c.category === 'EMSB') completedEmsbCredits += c.credits;
-        else if (c.category === 'EPSEL') completedEpselCredits += c.credits;
+        else if (c.category === 'EPSEL') {
+          completedEpselCredits += c.credits;
+          completedEngCredits += c.credits; // EPSEL Capstone/Thesis credits count towards ENG elective
+        }
       }
 
       // Identify unfulfilled requirements
@@ -297,12 +348,17 @@ export function runSimulation(
           }
         } else if (c.category === 'Rel' && completedRelCredits < interventions.relCreditsRequired) {
           neededCourses.push(c);
-        } else if (c.category === 'Eng' && completedEngCredits < interventions.engCreditsRequired) {
-          neededCourses.push(c);
+        } else if (c.category === 'Eng') {
+          const epselNeeded = Math.max(0, interventions.epselCreditsRequired - completedEpselCredits);
+          if (completedEngCredits < interventions.engCreditsRequired - epselNeeded) {
+            neededCourses.push(c);
+          }
         } else if (c.category === 'EMSB' && completedEmsbCredits < interventions.emsbCreditsRequired) {
           neededCourses.push(c);
-        } else if (c.category === 'EPSEL' && completedEpselCredits < interventions.epselCreditsRequired) {
-          neededCourses.push(c);
+        } else if (c.category === 'EPSEL') {
+          if (completedEpselCredits < interventions.epselCreditsRequired || (completedEngCredits < interventions.engCreditsRequired && completedEpselCredits < 6)) {
+            neededCourses.push(c);
+          }
         }
       }
 
@@ -311,6 +367,17 @@ export function runSimulation(
       const bottleneckNotes: string[] = [];
 
       for (const c of neededCourses) {
+        // Enforce standing / year restrictions:
+        // CBE 291 (classId '004') cannot be taken in Year 1 (semesters 1 & 2)
+        // CBE 391 (classId '022') cannot be taken in Year 1 or Year 2 (semesters 1 through 4)
+        // CHEM 357 (classId '032') requires Sophomore standing or completed CHEM 112 ('012')
+        // CHEM 467 (classId '033') requires Junior standing (semesters 5+), aligning CBE 373 to Junior Winter
+        // EPSEL Senior Capstone/Thesis courses require Senior standing (semesters 7+)
+        if (c.classId === '004' && sem <= 2) continue;
+        if (c.classId === '022' && sem <= 4) continue;
+        if (c.classId === '032' && sem <= 2 && !student.completedCourses.has('012')) continue;
+        if (c.classId === '033' && sem <= 4) continue;
+        if (c.category === 'EPSEL' && sem <= 6) continue;
         // Evaluate missing prerequisites, accounting for concurrent enrollment allowed (c.concurrentPrereqs)
         const missingPrereqs = c.prereqs.filter(pId => {
           if (student.completedCourses.has(pId)) return false;
@@ -383,32 +450,24 @@ export function runSimulation(
       // Gen Ed & Religion courses get steady priority (+50 / +40) so students take them evenly throughout semesters.
       // Non-critical electives fill remaining slots.
       eligibleCourses.sort((a, b) => {
-        const dsA = downstreamWeights.get(a.classId) || 0;
-        const dsB = downstreamWeights.get(b.classId) || 0;
+        const getPriorityWeight = (c: Course): number => {
+          const ds = downstreamWeights.get(c.classId) || 0;
+          if (c.category === 'Major') {
+            if (ds > 0) return 100 + ds * 10;
+            return sem >= 7 ? 75 : 42;
+          }
+          if (c.category === 'EPSEL') {
+            return sem >= 7 ? 85 : 30;
+          }
+          if (c.category === 'Eng' || c.category === 'EMSB') {
+            return sem >= 5 ? 52 : 30;
+          }
+          if (c.category === 'Gen') return 55;
+          if (c.category === 'Rel') return 45;
+          return 30;
+        };
 
-        let weightA = 0;
-        if (a.category === 'Major') {
-          weightA = dsA > 0 ? 100 + dsA * 10 : 35;
-        } else if (a.category === 'Gen') {
-          weightA = 55;
-        } else if (a.category === 'Rel') {
-          weightA = 45;
-        } else {
-          weightA = 30;
-        }
-
-        let weightB = 0;
-        if (b.category === 'Major') {
-          weightB = dsB > 0 ? 100 + dsB * 10 : 35;
-        } else if (b.category === 'Gen') {
-          weightB = 55;
-        } else if (b.category === 'Rel') {
-          weightB = 45;
-        } else {
-          weightB = 30;
-        }
-
-        return weightB - weightA;
+        return getPriorityWeight(b) - getPriorityWeight(a);
       });
 
       // Flexible credit capacity near senior year or bottleneck
@@ -437,14 +496,18 @@ export function runSimulation(
         if (enrolledIds.includes(c.classId)) continue;
 
         // Strict Category Credit Caps:
-        // Eng: required 9 cr (interventions.engCreditsRequired)
+        // Eng: required 12 cr (interventions.engCreditsRequired, includes EPSEL)
         // EMSB: required 4 cr (interventions.emsbCreditsRequired)
         // EPSEL: required 3 cr, max 6 cr accepted
         // Rel: required 14 cr (interventions.relCreditsRequired)
+        const epselNeeded = Math.max(0, interventions.epselCreditsRequired - runningEpselCredits);
         if (c.category === 'Rel' && runningRelCredits >= interventions.relCreditsRequired) continue;
-        if (c.category === 'Eng' && runningEngCredits >= interventions.engCreditsRequired) continue;
+        if (c.category === 'Eng' && runningEngCredits >= interventions.engCreditsRequired - epselNeeded) continue;
         if (c.category === 'EMSB' && runningEmsbCredits >= interventions.emsbCreditsRequired) continue;
-        if (c.category === 'EPSEL' && runningEpselCredits >= Math.max(interventions.epselCreditsRequired, 6)) continue;
+        if (c.category === 'EPSEL') {
+          if (runningEpselCredits >= interventions.epselCreditsRequired && runningEngCredits >= interventions.engCreditsRequired) continue;
+          if (runningEpselCredits >= Math.max(interventions.epselCreditsRequired, 6)) continue;
+        }
 
         if (currentCredits + c.credits <= termCreditLimit + 0.5) {
           enrolledIds.push(c.classId);
@@ -453,7 +516,10 @@ export function runSimulation(
           if (c.category === 'Rel') runningRelCredits += c.credits;
           else if (c.category === 'Eng') runningEngCredits += c.credits;
           else if (c.category === 'EMSB') runningEmsbCredits += c.credits;
-          else if (c.category === 'EPSEL') runningEpselCredits += c.credits;
+          else if (c.category === 'EPSEL') {
+            runningEpselCredits += c.credits;
+            runningEngCredits += c.credits; // EPSEL counts towards Eng electives
+          }
 
           // Check if this course is a lecture paired with a concurrent lab
           for (const [labId, lecId] of Object.entries(LAB_COREQUISITES)) {
@@ -487,8 +553,28 @@ export function runSimulation(
         }
       }
 
-      // Mark enrolled courses completed at end of semester
+      // Log return from stop-out / leave if parity flipped starting this semester
+      if (student.parityFlipAfterSem !== undefined && sem === student.parityFlipAfterSem + 1) {
+        bottleneckNotes.unshift(`Returned from leave/mission/co-op — term parity shifted to ${currentTerm}`);
+      }
+
+      // Mark enrolled courses completed at end of semester (accounting for empirical DFW/retake probability)
+      // In actual data, 33.3% of students (15/45) account for all academic retakes (clustered risk rather than independent across 100% of students).
+      const studentIdx = parseInt(student.id.replace('STD-', ''), 10) - 1000;
+      const isRetakeProne = ((studentIdx * 2654435761) >>> 0) / 4294967296 < 0.42;
       for (const classId of enrolledIds) {
+        if (interventions.enableEmpiricalRetakes && isRetakeProne) {
+          const baseProb = EMPIRICAL_RETAKE_RATES[classId] || 0;
+          const retakeProb = Math.min(0.35, baseProb * 2.0);
+          if (retakeProb > 0 && !student.retakenCourses.includes(classId) && Math.random() < retakeProb) {
+            student.retakenCourses.push(classId);
+            const failedCourse = coursesMap.get(classId);
+            if (failedCourse) {
+              bottleneckNotes.push(`Retake required next offering: ${failedCourse.deptCode} ${failedCourse.classNumber}`);
+            }
+            continue; // Do not mark completed yet; will retake in next available term
+          }
+        }
         student.completedCourses.add(classId);
       }
 
@@ -503,8 +589,8 @@ export function runSimulation(
       };
       student.semesterHistory.push(log);
 
-      // If Spring/Summer enabled, run optional Spring/Summer term after Winter semester
-      if (interventions.enableSpringSummer && currentTerm === 'Winter' && !student.isGraduated) {
+      // Run optional Spring/Summer term after Winter semester (either universal policy or empirical student budget)
+      if ((interventions.enableSpringSummer || student.springSummerUsed < student.springSummerBudget) && currentTerm === 'Winter' && !student.isGraduated) {
         let ssRelDone = 0;
         let ssEngDone = 0;
         let ssEmsbDone = 0;
@@ -516,7 +602,10 @@ export function runSimulation(
           if (c.category === 'Rel') ssRelDone += c.credits;
           else if (c.category === 'Eng') ssEngDone += c.credits;
           else if (c.category === 'EMSB') ssEmsbDone += c.credits;
-          else if (c.category === 'EPSEL') ssEpselDone += c.credits;
+          else if (c.category === 'EPSEL') {
+            ssEpselDone += c.credits;
+            ssEngDone += c.credits;
+          }
         }
 
         const ssEligible: Course[] = [];
@@ -529,11 +618,18 @@ export function runSimulation(
             if (subDone) continue;
           }
 
+          if (c.classId === '004' && sem <= 2) continue;
+          if (c.classId === '022' && sem <= 4) continue;
+          if (c.classId === '032' && sem <= 2 && !student.completedCourses.has('012')) continue;
+          if (c.classId === '033' && sem <= 4) continue;
+          if (c.category === 'EPSEL' && sem <= 6) continue;
+
           const missingPrereqs = c.prereqs.filter(pId => !student.completedCourses.has(pId));
           if (missingPrereqs.length > 0) continue;
 
           const isSpringSummerOffered = c.termsTaught.includes('Spring') || c.termsTaught.includes('Summer');
           const isGenEdOrRel = c.category === 'Gen' || c.category === 'Rel';
+          const ssEpselNeeded = Math.max(0, interventions.epselCreditsRequired - ssEpselDone);
 
           // General education & Religion are available in Spring/Summer.
           // Engineering courses (Major, Eng, EMSB, EPSEL) are NOT taught in Spring/Summer unless explicitly listed in classdetails.csv.
@@ -543,9 +639,9 @@ export function runSimulation(
               if (genMatch) ssEligible.push(c);
             }
             else if (c.category === 'Rel' && ssRelDone < interventions.relCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'Eng' && isSpringSummerOffered && ssEngDone < interventions.engCreditsRequired) ssEligible.push(c);
+            else if (c.category === 'Eng' && isSpringSummerOffered && ssEngDone < interventions.engCreditsRequired - ssEpselNeeded) ssEligible.push(c);
             else if (c.category === 'EMSB' && isSpringSummerOffered && ssEmsbDone < interventions.emsbCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'EPSEL' && isSpringSummerOffered && ssEpselDone < Math.max(interventions.epselCreditsRequired, 6)) ssEligible.push(c);
+            else if (c.category === 'EPSEL' && isSpringSummerOffered && (ssEpselDone < interventions.epselCreditsRequired || (ssEngDone < interventions.engCreditsRequired && ssEpselDone < 6))) ssEligible.push(c);
             else if (c.category === 'Major' && isSpringSummerOffered) ssEligible.push(c);
           }
         }
@@ -553,10 +649,14 @@ export function runSimulation(
         let ssCredits = 0;
         const ssEnrolled: string[] = [];
         for (const c of ssEligible) {
+          const ssEpselNeeded = Math.max(0, interventions.epselCreditsRequired - ssEpselDone);
           if (c.category === 'Rel' && ssRelDone >= interventions.relCreditsRequired) continue;
-          if (c.category === 'Eng' && ssEngDone >= interventions.engCreditsRequired) continue;
+          if (c.category === 'Eng' && ssEngDone >= interventions.engCreditsRequired - ssEpselNeeded) continue;
           if (c.category === 'EMSB' && ssEmsbDone >= interventions.emsbCreditsRequired) continue;
-          if (c.category === 'EPSEL' && ssEpselDone >= Math.max(interventions.epselCreditsRequired, 6)) continue;
+          if (c.category === 'EPSEL') {
+            if (ssEpselDone >= interventions.epselCreditsRequired && ssEngDone >= interventions.engCreditsRequired) continue;
+            if (ssEpselDone >= Math.max(interventions.epselCreditsRequired, 6)) continue;
+          }
 
           if (ssCredits + c.credits <= 6.5) {
             ssEnrolled.push(c.classId);
@@ -566,11 +666,15 @@ export function runSimulation(
             if (c.category === 'Rel') ssRelDone += c.credits;
             else if (c.category === 'Eng') ssEngDone += c.credits;
             else if (c.category === 'EMSB') ssEmsbDone += c.credits;
-            else if (c.category === 'EPSEL') ssEpselDone += c.credits;
+            else if (c.category === 'EPSEL') {
+              ssEpselDone += c.credits;
+              ssEngDone += c.credits;
+            }
           }
         }
 
         if (ssEnrolled.length > 0) {
+          student.springSummerUsed += 1;
           student.semesterHistory.push({
             semester: sem,
             term: 'Spring',
@@ -594,7 +698,10 @@ export function runSimulation(
         if (c.category === 'Rel') relDone += c.credits;
         else if (c.category === 'Eng') engDone += c.credits;
         else if (c.category === 'EMSB') emsbDone += c.credits;
-        else if (c.category === 'EPSEL') epselDone += c.credits;
+        else if (c.category === 'EPSEL') {
+          epselDone += c.credits;
+          engDone += c.credits; // EPSEL counts towards Eng electives
+        }
       }
 
       const majorCoursesAll = Array.from(coursesMap.values()).filter(c => c.category === 'Major');

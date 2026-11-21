@@ -1,5 +1,6 @@
 import React from 'react';
 import { Interventions, Term } from '../simulator/types';
+import { EMPIRICAL_AP_SUMMARY } from '../data/empiricalApProfiles';
 import { Sliders, Calendar, BookOpen, Users, Zap, Check, RotateCcw, AlertCircle } from 'lucide-react';
 
 interface InterventionsTabProps {
@@ -171,10 +172,13 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 <span>Engineering Electives (Eng)</span>
                 <span className="text-byu-royal font-extrabold">{interventions.engCreditsRequired} Credit Hours</span>
               </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Total technical electives requirement (includes EPSEL Capstone/Thesis credits)
+              </p>
               <input
                 type="range"
                 min="0"
-                max="12"
+                max="15"
                 step="3"
                 value={interventions.engCreditsRequired}
                 onChange={(e) => onChangeInterventions({ ...interventions, engCreditsRequired: parseInt(e.target.value) })}
@@ -184,8 +188,9 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 <span>0 hrs</span>
                 <span>3 hrs</span>
                 <span>6 hrs</span>
-                <span className="font-bold text-byu-royal">9 hrs (Default Baseline)</span>
-                <span>12 hrs</span>
+                <span>9 hrs</span>
+                <span className="font-bold text-byu-royal">12 hrs (Default)</span>
+                <span>15 hrs</span>
               </div>
             </div>
 
@@ -212,6 +217,9 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 <span>EPSEL Senior Elective / Capstone</span>
                 <span className="text-byu-royal font-extrabold">{interventions.epselCreditsRequired} Credit Hours</span>
               </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Capstone/Thesis requirement (counts towards the 12 cr Engineering Electives)
+              </p>
               <input
                 type="range"
                 min="0"
@@ -541,7 +549,7 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 onChange={(e) => onChangeInterventions({ ...interventions, populationMeanCredits: parseFloat(e.target.value) })}
                 className="w-full mt-2 accent-byu-royal cursor-pointer"
               />
-              <span className="text-[11px] text-slate-500 mt-1 block">Baseline: 14.5 credit hours/semester</span>
+              <span className="text-[11px] text-slate-500 mt-1 block">Baseline: 17.0 cr cap (~14.6 cr/sem realized vs. 14.7 observed)</span>
             </div>
 
             {/* Working Student % */}
@@ -581,19 +589,141 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
             </div>
           </div>
 
-          {/* Spring / Summer Toggle */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+          {/* Spring / Summer Participation Rate & Universal Toggle */}
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-slate-800 block">
+                  Universal Spring / Summer Enrollment Policy (100% Every Summer)
+                </span>
+                <span className="text-xs text-slate-500">
+                  When enabled, all students take Gen Ed, Religion, & Spring-offered courses every summer (up to 6 cr/summer). When off, uses the empirical participation rate below.
+                </span>
+              </div>
+              <button
+                onClick={() => onChangeInterventions({ ...interventions, enableSpringSummer: !interventions.enableSpringSummer })}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  interventions.enableSpringSummer ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                }`}
+              >
+                {interventions.enableSpringSummer ? '100% Policy On' : 'Empirical Mode'}
+              </button>
+            </div>
+
+            {!interventions.enableSpringSummer && (
+              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span>
+                    Empirical Spring / Summer Participation Rate
+                    <span className="ml-2 px-1.5 py-0.5 rounded bg-byu-navy/10 text-byu-navy text-[10px] font-bold">
+                      Calibrated Baseline (74%)
+                    </span>
+                  </span>
+                  <span className="text-byu-royal font-extrabold">
+                    {Math.round(interventions.springSummerParticipationRate * 100)}% of students
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1.0"
+                  step="0.02"
+                  value={interventions.springSummerParticipationRate}
+                  onChange={(e) => onChangeInterventions({ ...interventions, springSummerParticipationRate: parseFloat(e.target.value) })}
+                  className="w-full mt-2 accent-byu-royal cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <span>0% (No SS)</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span className="font-bold text-byu-royal">74% (Historical Avg)</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Empirical Incoming AP / Transfer Credit Profiles Toggle */}
+          <div className="pt-3 border-t border-slate-100 space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-slate-800 block">
+                  Empirical Incoming AP / Transfer Credit Profiles
+                  <span className="ml-2 px-1.5 py-0.5 rounded bg-byu-navy/10 text-byu-navy text-[10px] font-bold">
+                    Calibrated Baseline (n={EMPIRICAL_AP_SUMMARY.sampleSize})
+                  </span>
+                </span>
+                <span className="text-xs text-slate-500">
+                  Samples correlated incoming AP/transfer credit profiles from actual graduating CBE students (avg {EMPIRICAL_AP_SUMMARY.avgCredits} cr, range {EMPIRICAL_AP_SUMMARY.minCredits}–{EMPIRICAL_AP_SUMMARY.maxCredits} cr). Disable to simulate zero-credit entry.
+                </span>
+              </div>
+              <button
+                onClick={() => onChangeInterventions({ ...interventions, enableApTransferCredits: !interventions.enableApTransferCredits })}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                  interventions.enableApTransferCredits ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+                }`}
+              >
+                {interventions.enableApTransferCredits ? 'Enabled' : 'Disabled'}
+              </button>
+            </div>
+            {interventions.enableApTransferCredits && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {EMPIRICAL_AP_SUMMARY.courseRates.map((item) => (
+                  <span
+                    key={item.classId}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-[10px] font-semibold text-slate-700"
+                  >
+                    <span>{item.label}:</span>
+                    <span className="text-byu-royal font-bold">{item.pct}%</span>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Empirical Course Retake / DFW Rates Toggle */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Enable Spring / Summer Semester Enrollment</span>
-              <span className="text-xs text-slate-500">Allows taking Gen Ed & Religion in Spring/Summer (Engineering courses restricted unless explicitly listed in classdetails.csv)</span>
+              <span className="text-xs font-bold text-slate-800 block">
+                Empirical Course Retake / DFW Rates
+                <span className="ml-2 px-1.5 py-0.5 rounded bg-byu-navy/10 text-byu-navy text-[10px] font-bold">
+                  Calibrated Baseline (n=45)
+                </span>
+              </span>
+              <span className="text-xs text-slate-500">
+                Applies historical per-course repeat probabilities (e.g., CHEM 467: 15.4%, CBE 376: 12.8%, CHEM 357: 9.8%, CBE 273: 7.0%). Disable for 100% first-attempt pass rate.
+              </span>
             </div>
             <button
-              onClick={() => onChangeInterventions({ ...interventions, enableSpringSummer: !interventions.enableSpringSummer })}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                interventions.enableSpringSummer ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+              onClick={() => onChangeInterventions({ ...interventions, enableEmpiricalRetakes: !interventions.enableEmpiricalRetakes })}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                interventions.enableEmpiricalRetakes ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
               }`}
             >
-              {interventions.enableSpringSummer ? 'Enabled' : 'Disabled'}
+              {interventions.enableEmpiricalRetakes ? 'Enabled' : 'Disabled'}
+            </button>
+          </div>
+
+          {/* Stop-Out / Mission / Co-op Term Parity Flips Toggle */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-slate-800 block">
+                Stop-Out / Mission / Co-op Term Parity Flips
+                <span className="ml-2 px-1.5 py-0.5 rounded bg-byu-navy/10 text-byu-navy text-[10px] font-bold">
+                  Calibrated Baseline (22%)
+                </span>
+              </span>
+              <span className="text-xs text-slate-500">
+                Models the 22.2% of students who return from a leave/mission/co-op off-cycle (shifting Fall ↔ Winter parity relative to once-a-year CBE courses).
+              </span>
+            </div>
+            <button
+              onClick={() => onChangeInterventions({ ...interventions, enableStopOutParityFlips: !interventions.enableStopOutParityFlips })}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                interventions.enableStopOutParityFlips ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'
+              }`}
+            >
+              {interventions.enableStopOutParityFlips ? 'Enabled' : 'Disabled'}
             </button>
           </div>
         </div>

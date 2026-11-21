@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -13,7 +13,8 @@ import {
 } from 'recharts';
 import { SimulationResult } from '../simulator/types';
 import { INITIAL_COURSES } from '../data/classDetailsData';
-import { Clock, Award, ArrowRight, CheckCircle2, BookOpen, Layers, Check } from 'lucide-react';
+import { ACTUAL_HISTORICAL_COHORT } from '../data/empiricalApProfiles';
+import { Clock, Award, ArrowRight, CheckCircle2, BookOpen, Layers, Check, History } from 'lucide-react';
 
 interface DashboardTabProps {
   baselineResult: SimulationResult;
@@ -26,24 +27,31 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   currentResult,
   onNavigateToInterventions,
 }) => {
+  const [showActualOverlay, setShowActualOverlay] = useState(true);
+
   const avgDiff = Math.round((currentResult.averageGraduationSemesters - baselineResult.averageGraduationSemesters) * 10) / 10;
   const isImproved = avgDiff < 0;
 
-  // Prepare chart data comparing baseline and current experiment year distributions
+  // Prepare chart data comparing baseline, current experiment, and actual historical cohort (% of cohort)
   const allSemesters = Array.from(
     new Set([
       ...Object.keys(baselineResult.semesterDistribution).map(Number),
       ...Object.keys(currentResult.semesterDistribution).map(Number),
+      ...(showActualOverlay ? Object.keys(ACTUAL_HISTORICAL_COHORT.semesterDistribution).map(Number) : []),
     ])
   ).sort((a, b) => a - b);
 
   const distributionChartData = allSemesters.map((sem) => {
     const years = (sem / 2).toFixed(1);
+    const bCount = baselineResult.semesterDistribution[sem] || 0;
+    const eCount = currentResult.semesterDistribution[sem] || 0;
+    const aCount = ACTUAL_HISTORICAL_COHORT.semesterDistribution[sem] || 0;
     return {
       year: `${years} Yrs`,
       semLabel: `${sem} Sem (${years} Yrs)`,
-      Baseline: baselineResult.semesterDistribution[sem] || 0,
-      Experiment: currentResult.semesterDistribution[sem] || 0,
+      Baseline: Number(((bCount / baselineResult.cohortSize) * 100).toFixed(1)),
+      Experiment: Number(((eCount / currentResult.cohortSize) * 100).toFixed(1)),
+      Actual: Number(((aCount / ACTUAL_HISTORICAL_COHORT.cohortSize) * 100).toFixed(1)),
     };
   });
 
@@ -51,11 +59,16 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   const cumulativeChartData = currentResult.cumulativeGraduation.map((item) => {
     const baselineItem = baselineResult.cumulativeGraduation.find((b) => b.semester === item.semester);
     const years = (item.semester / 2).toFixed(1);
+    const actualCumCount = Object.entries(ACTUAL_HISTORICAL_COHORT.semesterDistribution)
+      .filter(([semStr]) => Number(semStr) <= item.semester)
+      .reduce((sum, [, count]) => sum + count, 0);
+    const actualRate = Number(((actualCumCount / ACTUAL_HISTORICAL_COHORT.cohortSize) * 100).toFixed(1));
     return {
       year: `${years} Yrs`,
       semLabel: `Sem ${item.semester} (${years} Yrs)`,
       BaselineRate: baselineItem ? baselineItem.rate : 0,
       ExperimentRate: item.rate,
+      ActualRate: actualRate,
     };
   });
 
@@ -88,7 +101,10 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           else if (c.category === 'Rel') r += cr;
           else if (c.category === 'Eng') eng += cr;
           else if (c.category === 'EMSB') em += cr;
-          else if (c.category === 'EPSEL') ep += cr;
+          else if (c.category === 'EPSEL') {
+            ep += cr;
+            eng += cr;
+          }
 
           if (c.abetCategory === 'Eng') abE += cr;
           else if (c.abetCategory === 'Sci') abS += cr;
@@ -164,7 +180,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     {
       key: 'engElectives',
       label: 'Engineering Electives (Eng)',
-      desc: 'Advanced technical engineering electives (300+ level)',
+      desc: 'Advanced technical engineering electives (12 cr req, includes EPSEL Capstone/Thesis)',
       bStats: baselineSummary.engElectives,
       eStats: experimentSummary.engElectives,
     },
@@ -177,8 +193,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
     },
     {
       key: 'epsel',
-      label: 'EPSEL Technical Electives',
-      desc: 'Engineering project, senior elective, & research credits',
+      label: 'EPSEL Capstone / Thesis',
+      desc: 'Senior design capstone, project, or thesis (part of Eng electives)',
       bStats: baselineSummary.epsel,
       eStats: experimentSummary.epsel,
     },
@@ -219,7 +235,18 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+          <button
+            onClick={() => setShowActualOverlay((prev) => !prev)}
+            className={`text-xs font-semibold px-3 py-2 rounded-lg transition-colors border flex items-center space-x-1.5 ${
+              showActualOverlay
+                ? 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
+                : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <History className="h-3.5 w-3.5" />
+            <span>Actual Cohort (n={ACTUAL_HISTORICAL_COHORT.cohortSize}): {showActualOverlay ? 'On' : 'Off'}</span>
+          </button>
           <button
             onClick={onNavigateToInterventions}
             className="bg-byu-navy hover:bg-byu-royal text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center space-x-2"
@@ -250,6 +277,12 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               </span>
             )}
           </div>
+          {showActualOverlay && (
+            <div className="mt-1.5 pt-1.5 border-t border-slate-100 text-[11px] flex items-center justify-between text-amber-800">
+              <span>Actual Historical (n={ACTUAL_HISTORICAL_COHORT.cohortSize}):</span>
+              <strong>{ACTUAL_HISTORICAL_COHORT.averageGraduationSemesters} sem</strong>
+            </div>
+          )}
         </div>
 
         {/* 8-Semester Rate */}
@@ -265,6 +298,12 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           <div className="mt-2 text-xs text-slate-500">
             <span>Baseline: <strong className="text-slate-700">{baselineResult.eightSemesterGradRate}%</strong> of cohort</span>
           </div>
+          {showActualOverlay && (
+            <div className="mt-1.5 pt-1.5 border-t border-slate-100 text-[11px] flex items-center justify-between text-amber-800">
+              <span>Actual Historical (n={ACTUAL_HISTORICAL_COHORT.cohortSize}):</span>
+              <strong>{ACTUAL_HISTORICAL_COHORT.eightSemesterGradRate}%</strong>
+            </div>
+          )}
         </div>
 
         {/* 10-Semester Rate */}
@@ -280,6 +319,12 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           <div className="mt-2 text-xs text-slate-500">
             <span>Baseline: <strong className="text-slate-700">{baselineResult.tenSemesterGradRate}%</strong> of cohort</span>
           </div>
+          {showActualOverlay && (
+            <div className="mt-1.5 pt-1.5 border-t border-slate-100 text-[11px] flex items-center justify-between text-amber-800">
+              <span>Actual Historical (n={ACTUAL_HISTORICAL_COHORT.cohortSize}):</span>
+              <strong>{ACTUAL_HISTORICAL_COHORT.tenSemesterGradRate}%</strong>
+            </div>
+          )}
         </div>
       </div>
 
@@ -287,14 +332,19 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Semester Distribution Histogram */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-800">Graduation Time Distribution</h3>
-              <p className="text-xs text-slate-500">Number of students graduating at each year mark (2 semesters = 1 year)</p>
+              <p className="text-xs text-slate-500">% of cohort graduating at each year mark (2 semesters = 1 year)</p>
             </div>
             <div className="flex items-center space-x-3 text-xs">
               <span className="flex items-center"><span className="w-3 h-3 bg-slate-400 rounded-sm mr-1.5 inline-block"></span> Baseline</span>
               <span className="flex items-center"><span className="w-3 h-3 bg-byu-royal rounded-sm mr-1.5 inline-block"></span> Experiment</span>
+              {showActualOverlay && (
+                <span className="flex items-center font-semibold text-amber-800">
+                  <span className="w-3 h-3 bg-amber-500 rounded-sm mr-1.5 inline-block"></span> Actual (n={ACTUAL_HISTORICAL_COHORT.cohortSize})
+                </span>
+              )}
             </div>
           </div>
           <div className="h-64 w-full">
@@ -302,13 +352,17 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
               <BarChart data={distributionChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                 <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#64748B' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#64748B' }} allowDecimals={false} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748B' }} unit="%" />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#0F172A', color: '#fff', borderRadius: '8px', fontSize: '12px' }}
                   labelFormatter={(label, payload) => payload[0]?.payload?.semLabel || label}
+                  formatter={(val: any, name: any) => [`${val}%`, name === 'Actual' ? `Actual (n=${ACTUAL_HISTORICAL_COHORT.cohortSize})` : name]}
                 />
                 <Bar dataKey="Baseline" fill="#94A3B8" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Experiment" fill="#0062B8" radius={[4, 4, 0, 0]} />
+                {showActualOverlay && (
+                  <Bar dataKey="Actual" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -316,7 +370,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
         {/* Cumulative Graduation Curve */}
         <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-800">Cumulative Graduation Rate Curve</h3>
               <p className="text-xs text-slate-500">% of cohort graduated by year mark (2 semesters = 1 year)</p>
@@ -324,6 +378,11 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             <div className="flex items-center space-x-3 text-xs">
               <span className="flex items-center"><span className="w-3 h-0.5 bg-slate-400 mr-1.5 inline-block"></span> Baseline</span>
               <span className="flex items-center"><span className="w-3 h-0.5 bg-emerald-600 mr-1.5 inline-block"></span> Experiment</span>
+              {showActualOverlay && (
+                <span className="flex items-center font-semibold text-amber-800">
+                  <span className="w-3 h-0.5 bg-amber-500 border-t border-dashed mr-1.5 inline-block"></span> Actual (n={ACTUAL_HISTORICAL_COHORT.cohortSize})
+                </span>
+              )}
             </div>
           </div>
           <div className="h-64 w-full">
@@ -335,10 +394,16 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                 <Tooltip
                   contentStyle={{ backgroundColor: '#0F172A', color: '#fff', borderRadius: '8px', fontSize: '12px' }}
                   labelFormatter={(label, payload) => payload[0]?.payload?.semLabel || label}
-                  formatter={(val: any) => [`${val}%`, '']}
+                  formatter={(val: any, name: any) => [
+                    `${val}%`,
+                    name === 'ActualRate' ? `Actual (n=${ACTUAL_HISTORICAL_COHORT.cohortSize})` : name === 'BaselineRate' ? 'Baseline' : 'Experiment',
+                  ]}
                 />
                 <Line type="monotone" dataKey="BaselineRate" stroke="#94A3B8" strokeWidth={2} dot={{ r: 3 }} />
                 <Line type="monotone" dataKey="ExperimentRate" stroke="#10B981" strokeWidth={3} dot={{ r: 4 }} />
+                {showActualOverlay && (
+                  <Line type="monotone" dataKey="ActualRate" stroke="#F59E0B" strokeWidth={2.5} strokeDasharray="5 4" dot={{ r: 3, fill: '#F59E0B' }} />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
