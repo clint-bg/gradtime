@@ -75,7 +75,7 @@ export function getDefaultInterventions(): Interventions {
     removeWrtg316: false,
     removeEcon110: false,
     removeMath303: false,
-    removeChem464: false,
+    removeChem464: true,
     removeStat121: false,
     removeCbeSeminars: false,
     removeCbe436: false,
@@ -212,6 +212,9 @@ export function runSimulation(
     }
     if (interventions.removeMath303) {
       overridePrereqs = overridePrereqs.filter(pId => pId !== '010');
+    }
+    if (interventions.removeChem464) {
+      overridePrereqs = overridePrereqs.filter(pId => pId !== '038');
     }
     if (interventions.removeCbe436) {
       overridePrereqs = overridePrereqs.filter(pId => pId !== '023');

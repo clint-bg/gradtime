@@ -69,7 +69,7 @@ export interface Interventions {
   removeWrtg316: boolean;        // default false (remove WRTG 316)
   removeEcon110: boolean;        // default false (remove ECON 110)
   removeMath303: boolean;        // default false (remove MATH 303)
-  removeChem464: boolean;        // default false (remove CHEM 464)
+  removeChem464: boolean;        // default true (exempt CHEM 464 by default; taken by only 6.5% of actual graduates)
   removeStat121: boolean;        // default false (remove STAT 121)
   removeCbeSeminars: boolean;    // default false (remove CBE 191, 291, 391)
   removeCbe436: boolean;         // default false (remove CBE 436 Process Control)
