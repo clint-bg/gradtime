@@ -66,7 +66,7 @@ export function getDefaultInterventions(): Interventions {
   return {
     offeringOverrides: {},
     relCreditsRequired: 14,
-    engCreditsRequired: 12,
+    engCreditsRequired: 9,
     emsbCreditsRequired: 4,
     epselCreditsRequired: 3,
     genEdSet: 1,
@@ -367,14 +367,16 @@ export function runSimulation(
         } else if (c.category === 'Rel' && completedRelCredits < interventions.relCreditsRequired) {
           neededCourses.push(c);
         } else if (c.category === 'Eng') {
+          const totalEngTarget = interventions.engCreditsRequired + interventions.epselCreditsRequired;
           const epselNeeded = Math.max(0, interventions.epselCreditsRequired - completedEpselCredits);
-          if (completedEngCredits < interventions.engCreditsRequired - epselNeeded) {
+          if (completedEngCredits < totalEngTarget - epselNeeded) {
             neededCourses.push(c);
           }
         } else if (c.category === 'EMSB' && completedEmsbCredits < interventions.emsbCreditsRequired) {
           neededCourses.push(c);
         } else if (c.category === 'EPSEL') {
-          if (completedEpselCredits < interventions.epselCreditsRequired || (completedEngCredits < interventions.engCreditsRequired && completedEpselCredits < 6)) {
+          const totalEngTarget = interventions.engCreditsRequired + interventions.epselCreditsRequired;
+          if (completedEpselCredits < interventions.epselCreditsRequired || (completedEngCredits < totalEngTarget && completedEpselCredits < 6)) {
             neededCourses.push(c);
           }
         }
@@ -514,16 +516,17 @@ export function runSimulation(
         if (enrolledIds.includes(c.classId)) continue;
 
         // Strict Category Credit Caps:
-        // Eng: required 12 cr (interventions.engCreditsRequired, includes EPSEL)
+        // Eng: required 9 cr non-EPSEL + 3 cr EPSEL = 12 cr total (totalEngTarget)
         // EMSB: required 4 cr (interventions.emsbCreditsRequired)
         // EPSEL: required 3 cr, max 6 cr accepted
         // Rel: required 14 cr (interventions.relCreditsRequired)
+        const totalEngTarget = interventions.engCreditsRequired + interventions.epselCreditsRequired;
         const epselNeeded = Math.max(0, interventions.epselCreditsRequired - runningEpselCredits);
         if (c.category === 'Rel' && runningRelCredits >= interventions.relCreditsRequired) continue;
-        if (c.category === 'Eng' && runningEngCredits >= interventions.engCreditsRequired - epselNeeded) continue;
+        if (c.category === 'Eng' && runningEngCredits >= totalEngTarget - epselNeeded) continue;
         if (c.category === 'EMSB' && runningEmsbCredits >= interventions.emsbCreditsRequired) continue;
         if (c.category === 'EPSEL') {
-          if (runningEpselCredits >= interventions.epselCreditsRequired && runningEngCredits >= interventions.engCreditsRequired) continue;
+          if (runningEpselCredits >= interventions.epselCreditsRequired && runningEngCredits >= totalEngTarget) continue;
           if (runningEpselCredits >= Math.max(interventions.epselCreditsRequired, 6)) continue;
         }
 
@@ -647,6 +650,7 @@ export function runSimulation(
 
           const isSpringSummerOffered = c.termsTaught.includes('Spring') || c.termsTaught.includes('Summer');
           const isGenEdOrRel = c.category === 'Gen' || c.category === 'Rel';
+          const ssTotalEngTarget = interventions.engCreditsRequired + interventions.epselCreditsRequired;
           const ssEpselNeeded = Math.max(0, interventions.epselCreditsRequired - ssEpselDone);
 
           // General education & Religion are available in Spring/Summer.
@@ -657,9 +661,9 @@ export function runSimulation(
               if (genMatch) ssEligible.push(c);
             }
             else if (c.category === 'Rel' && ssRelDone < interventions.relCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'Eng' && isSpringSummerOffered && ssEngDone < interventions.engCreditsRequired - ssEpselNeeded) ssEligible.push(c);
+            else if (c.category === 'Eng' && isSpringSummerOffered && ssEngDone < ssTotalEngTarget - ssEpselNeeded) ssEligible.push(c);
             else if (c.category === 'EMSB' && isSpringSummerOffered && ssEmsbDone < interventions.emsbCreditsRequired) ssEligible.push(c);
-            else if (c.category === 'EPSEL' && isSpringSummerOffered && (ssEpselDone < interventions.epselCreditsRequired || (ssEngDone < interventions.engCreditsRequired && ssEpselDone < 6))) ssEligible.push(c);
+            else if (c.category === 'EPSEL' && isSpringSummerOffered && (ssEpselDone < interventions.epselCreditsRequired || (ssEngDone < ssTotalEngTarget && ssEpselDone < 6))) ssEligible.push(c);
             else if (c.category === 'Major' && isSpringSummerOffered) ssEligible.push(c);
           }
         }
@@ -667,12 +671,13 @@ export function runSimulation(
         let ssCredits = 0;
         const ssEnrolled: string[] = [];
         for (const c of ssEligible) {
+          const ssTotalEngTarget = interventions.engCreditsRequired + interventions.epselCreditsRequired;
           const ssEpselNeeded = Math.max(0, interventions.epselCreditsRequired - ssEpselDone);
           if (c.category === 'Rel' && ssRelDone >= interventions.relCreditsRequired) continue;
-          if (c.category === 'Eng' && ssEngDone >= interventions.engCreditsRequired - ssEpselNeeded) continue;
+          if (c.category === 'Eng' && ssEngDone >= ssTotalEngTarget - ssEpselNeeded) continue;
           if (c.category === 'EMSB' && ssEmsbDone >= interventions.emsbCreditsRequired) continue;
           if (c.category === 'EPSEL') {
-            if (ssEpselDone >= interventions.epselCreditsRequired && ssEngDone >= interventions.engCreditsRequired) continue;
+            if (ssEpselDone >= interventions.epselCreditsRequired && ssEngDone >= ssTotalEngTarget) continue;
             if (ssEpselDone >= Math.max(interventions.epselCreditsRequired, 6)) continue;
           }
 
@@ -742,7 +747,7 @@ export function runSimulation(
       });
 
       const relFinished = relDone >= interventions.relCreditsRequired;
-      const engFinished = engDone >= interventions.engCreditsRequired;
+      const engFinished = engDone >= (interventions.engCreditsRequired + interventions.epselCreditsRequired);
       const emsbFinished = emsbDone >= interventions.emsbCreditsRequired;
       const epselFinished = epselDone >= interventions.epselCreditsRequired;
 

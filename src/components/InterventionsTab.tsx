@@ -173,12 +173,12 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 <span className="text-byu-royal font-extrabold">{interventions.engCreditsRequired} Credit Hours</span>
               </div>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Total technical electives requirement (includes EPSEL Capstone/Thesis credits)
+                Non-EPSEL engineering electives (+ {interventions.epselCreditsRequired} cr EPSEL = <strong>{interventions.engCreditsRequired + interventions.epselCreditsRequired} cr total</strong>)
               </p>
               <input
                 type="range"
                 min="0"
-                max="15"
+                max="12"
                 step="3"
                 value={interventions.engCreditsRequired}
                 onChange={(e) => onChangeInterventions({ ...interventions, engCreditsRequired: parseInt(e.target.value) })}
@@ -188,9 +188,8 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 <span>0 hrs</span>
                 <span>3 hrs</span>
                 <span>6 hrs</span>
-                <span>9 hrs</span>
-                <span className="font-bold text-byu-royal">12 hrs (Default)</span>
-                <span>15 hrs</span>
+                <span className="font-bold text-byu-royal">9 hrs (Default)</span>
+                <span>12 hrs</span>
               </div>
             </div>
 
@@ -218,7 +217,7 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                 <span className="text-byu-royal font-extrabold">{interventions.epselCreditsRequired} Credit Hours</span>
               </div>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Capstone/Thesis requirement (counts towards the 12 cr Engineering Electives)
+                Capstone/Thesis requirement (counts towards the {interventions.engCreditsRequired + interventions.epselCreditsRequired} cr total engineering electives)
               </p>
               <input
                 type="range"

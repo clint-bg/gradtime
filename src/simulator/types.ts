@@ -56,9 +56,9 @@ export interface Interventions {
   offeringOverrides: Record<string, Term[]>;
   // Credit hour requirement reductions
   relCreditsRequired: number;     // default 14
-  engCreditsRequired: number;     // default 12 (includes EPSEL credits)
+  engCreditsRequired: number;     // default 9 (non-EPSEL Eng electives; + 3 cr EPSEL = 12 cr total)
   emsbCreditsRequired: number;    // default 4
-  epselCreditsRequired: number;   // default 3
+  epselCreditsRequired: number;   // default 3 (counts toward 12 cr total engineering electives)
   // General Education Set selection
   genEdSet: 1 | 2;               // default 1 (Set 1 vs Set 2)
   // Specific course credit hour overrides (courseId -> credits)
