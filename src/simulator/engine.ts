@@ -53,7 +53,6 @@ export function isCourseExempted(classId: string, interventions: Interventions):
   if (classId === '035' && interventions.removeWrtg316) return true;
   if (classId === '034' && interventions.removeEcon110) return true;
   if (classId === '010' && interventions.removeMath303) return true;
-  if (classId === '038' && interventions.removeChem464) return true;
   if (classId === '036' && interventions.removeStat121) return true;
   if ((classId === '002' || classId === '004' || classId === '022') && interventions.removeCbeSeminars) return true;
   return false;
@@ -66,13 +65,13 @@ export function getDefaultInterventions(): Interventions {
     engCreditsRequired: 9,
     emsbCreditsRequired: 4,
     epselCreditsRequired: 3,
+    chemLabCreditsRequired: 2,
     genEdSet: 1,
     creditOverrides: {},
     prereqOverrides: {},
     removeWrtg316: false,
     removeEcon110: false,
     removeMath303: false,
-    removeChem464: true,
     removeStat121: false,
     removeCbeSeminars: false,
     populationMeanCredits: 17.0,
@@ -207,9 +206,6 @@ export function runSimulation(
     if (interventions.removeMath303) {
       overridePrereqs = overridePrereqs.filter(pId => pId !== '010');
     }
-    if (interventions.removeChem464) {
-      overridePrereqs = overridePrereqs.filter(pId => pId !== '038');
-    }
 
     const overrideTerms = interventions.offeringOverrides[c.classId] !== undefined
       ? interventions.offeringOverrides[c.classId]
@@ -314,6 +310,7 @@ export function runSimulation(
       let completedEngCredits = 0;
       let completedEmsbCredits = 0;
       let completedEpselCredits = 0;
+      let completedChemLabCredits = 0;
 
       for (const classId of student.completedCourses) {
         const c = coursesMap.get(classId);
@@ -321,6 +318,7 @@ export function runSimulation(
         if (c.category === 'Rel') completedRelCredits += c.credits;
         else if (c.category === 'Eng') completedEngCredits += c.credits;
         else if (c.category === 'EMSB') completedEmsbCredits += c.credits;
+        else if (c.category === 'ChemLab') completedChemLabCredits += c.credits;
         else if (c.category === 'EPSEL') {
           completedEpselCredits += c.credits;
           completedEngCredits += c.credits; // EPSEL Capstone/Thesis credits count towards ENG elective
@@ -343,6 +341,8 @@ export function runSimulation(
         }
 
         if (c.category === 'Major') {
+          neededCourses.push(c);
+        } else if (c.category === 'ChemLab' && completedChemLabCredits < interventions.chemLabCreditsRequired) {
           neededCourses.push(c);
         } else if (c.category === 'Gen') {
           const genMatch = c.genEdSets.length === 0 || c.genEdSets.includes(interventions.genEdSet.toString());
@@ -464,6 +464,9 @@ export function runSimulation(
           if (c.category === 'EPSEL') {
             return sem >= 7 ? 85 : 30;
           }
+          if (c.category === 'ChemLab') {
+            return sem >= 5 ? 62 : 44;
+          }
           if (c.category === 'Eng' || c.category === 'EMSB') {
             return sem >= 5 ? 52 : 30;
           }
@@ -487,6 +490,7 @@ export function runSimulation(
       let runningEngCredits = completedEngCredits;
       let runningEmsbCredits = completedEmsbCredits;
       let runningEpselCredits = completedEpselCredits;
+      let runningChemLabCredits = completedChemLabCredits;
 
       // Mandatory requirement: UNIV 101 (classId '091') in first semester
       if (sem === 1 && !student.completedCourses.has('091')) {
@@ -504,12 +508,14 @@ export function runSimulation(
         // Eng: required 9 cr non-EPSEL + 3 cr EPSEL = 12 cr total (totalEngTarget)
         // EMSB: required 4 cr (interventions.emsbCreditsRequired)
         // EPSEL: required 3 cr, max 6 cr accepted
+        // ChemLab: required 2 cr (from CHEM 113, 355, 464, 465, 518)
         // Rel: required 14 cr (interventions.relCreditsRequired)
         const totalEngTarget = interventions.engCreditsRequired + interventions.epselCreditsRequired;
         const epselNeeded = Math.max(0, interventions.epselCreditsRequired - runningEpselCredits);
         if (c.category === 'Rel' && runningRelCredits >= interventions.relCreditsRequired) continue;
         if (c.category === 'Eng' && runningEngCredits >= totalEngTarget - epselNeeded) continue;
         if (c.category === 'EMSB' && runningEmsbCredits >= interventions.emsbCreditsRequired) continue;
+        if (c.category === 'ChemLab' && runningChemLabCredits >= interventions.chemLabCreditsRequired) continue;
         if (c.category === 'EPSEL') {
           if (runningEpselCredits >= interventions.epselCreditsRequired && runningEngCredits >= totalEngTarget) continue;
           if (runningEpselCredits >= Math.max(interventions.epselCreditsRequired, 6)) continue;
@@ -522,6 +528,7 @@ export function runSimulation(
           if (c.category === 'Rel') runningRelCredits += c.credits;
           else if (c.category === 'Eng') runningEngCredits += c.credits;
           else if (c.category === 'EMSB') runningEmsbCredits += c.credits;
+          else if (c.category === 'ChemLab') runningChemLabCredits += c.credits;
           else if (c.category === 'EPSEL') {
             runningEpselCredits += c.credits;
             runningEngCredits += c.credits; // EPSEL counts towards Eng electives
@@ -601,6 +608,7 @@ export function runSimulation(
         let ssEngDone = 0;
         let ssEmsbDone = 0;
         let ssEpselDone = 0;
+        let ssChemLabDone = 0;
 
         for (const classId of student.completedCourses) {
           const c = coursesMap.get(classId);
@@ -608,6 +616,7 @@ export function runSimulation(
           if (c.category === 'Rel') ssRelDone += c.credits;
           else if (c.category === 'Eng') ssEngDone += c.credits;
           else if (c.category === 'EMSB') ssEmsbDone += c.credits;
+          else if (c.category === 'ChemLab') ssChemLabDone += c.credits;
           else if (c.category === 'EPSEL') {
             ssEpselDone += c.credits;
             ssEngDone += c.credits;
@@ -649,6 +658,7 @@ export function runSimulation(
             else if (c.category === 'Eng' && isSpringSummerOffered && ssEngDone < ssTotalEngTarget - ssEpselNeeded) ssEligible.push(c);
             else if (c.category === 'EMSB' && isSpringSummerOffered && ssEmsbDone < interventions.emsbCreditsRequired) ssEligible.push(c);
             else if (c.category === 'EPSEL' && isSpringSummerOffered && (ssEpselDone < interventions.epselCreditsRequired || (ssEngDone < ssTotalEngTarget && ssEpselDone < 6))) ssEligible.push(c);
+            else if (c.category === 'ChemLab' && isSpringSummerOffered && ssChemLabDone < interventions.chemLabCreditsRequired) ssEligible.push(c);
             else if (c.category === 'Major' && isSpringSummerOffered) ssEligible.push(c);
           }
         }
@@ -661,6 +671,7 @@ export function runSimulation(
           if (c.category === 'Rel' && ssRelDone >= interventions.relCreditsRequired) continue;
           if (c.category === 'Eng' && ssEngDone >= ssTotalEngTarget - ssEpselNeeded) continue;
           if (c.category === 'EMSB' && ssEmsbDone >= interventions.emsbCreditsRequired) continue;
+          if (c.category === 'ChemLab' && ssChemLabDone >= interventions.chemLabCreditsRequired) continue;
           if (c.category === 'EPSEL') {
             if (ssEpselDone >= interventions.epselCreditsRequired && ssEngDone >= ssTotalEngTarget) continue;
             if (ssEpselDone >= Math.max(interventions.epselCreditsRequired, 6)) continue;
@@ -674,6 +685,7 @@ export function runSimulation(
             if (c.category === 'Rel') ssRelDone += c.credits;
             else if (c.category === 'Eng') ssEngDone += c.credits;
             else if (c.category === 'EMSB') ssEmsbDone += c.credits;
+            else if (c.category === 'ChemLab') ssChemLabDone += c.credits;
             else if (c.category === 'EPSEL') {
               ssEpselDone += c.credits;
               ssEngDone += c.credits;
@@ -699,6 +711,7 @@ export function runSimulation(
       let engDone = 0;
       let emsbDone = 0;
       let epselDone = 0;
+      let chemLabDone = 0;
 
       for (const classId of student.completedCourses) {
         const c = coursesMap.get(classId);
@@ -706,6 +719,7 @@ export function runSimulation(
         if (c.category === 'Rel') relDone += c.credits;
         else if (c.category === 'Eng') engDone += c.credits;
         else if (c.category === 'EMSB') emsbDone += c.credits;
+        else if (c.category === 'ChemLab') chemLabDone += c.credits;
         else if (c.category === 'EPSEL') {
           epselDone += c.credits;
           engDone += c.credits; // EPSEL counts towards Eng electives
@@ -735,8 +749,9 @@ export function runSimulation(
       const engFinished = engDone >= (interventions.engCreditsRequired + interventions.epselCreditsRequired);
       const emsbFinished = emsbDone >= interventions.emsbCreditsRequired;
       const epselFinished = epselDone >= interventions.epselCreditsRequired;
+      const chemLabFinished = chemLabDone >= interventions.chemLabCreditsRequired;
 
-      if (majorFinished && genFinished && relFinished && engFinished && emsbFinished && epselFinished) {
+      if (majorFinished && genFinished && relFinished && engFinished && emsbFinished && epselFinished && chemLabFinished) {
         student.isGraduated = true;
         student.graduationSemester = sem;
       }

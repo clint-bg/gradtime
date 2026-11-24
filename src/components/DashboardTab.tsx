@@ -96,7 +96,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
           const cr = c.credits;
           t += cr;
 
-          if (c.category === 'Major') m += cr;
+          if (c.category === 'Major' || c.category === 'ChemLab') m += cr;
           else if (c.category === 'Gen') g += cr;
           else if (c.category === 'Rel') r += cr;
           else if (c.category === 'Eng') eng += cr;

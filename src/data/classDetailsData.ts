@@ -768,23 +768,25 @@ export const INITIAL_COURSES: Course[] = [
   },
   {
     "classId": "037",
-    "classNumber": "353",
+    "classNumber": "355",
     "deptCode": "CHEM",
     "typicalYear": "Junior",
     "credits": 2,
-    "topic": "Organic chemistry lab",
+    "topic": "Organic Lab",
     "termsTaught": [
       "Fall",
-      "Winter"
+      "Winter",
+      "Spring",
+      "Summer"
     ],
-    "prereqs": [],
+    "prereqs": [
+      "032"
+    ],
     "concurrentPrereqs": [],
-    "category": "Major",
+    "category": "ChemLab",
     "genEdSets": [],
-    "substitutionAllowed": true,
-    "substitutionClassIds": [
-      "038"
-    ],
+    "substitutionAllowed": false,
+    "substitutionClassIds": [],
     "abetCategory": "Sci"
   },
   {
@@ -792,20 +794,19 @@ export const INITIAL_COURSES: Course[] = [
     "classNumber": "464",
     "deptCode": "CHEM",
     "typicalYear": "Senior",
-    "credits": 2,
-    "topic": "Physical chemistry lab",
+    "credits": 1,
+    "topic": "PChem Lab 1",
     "termsTaught": [
-      "Fall",
       "Winter"
     ],
-    "prereqs": [],
-    "concurrentPrereqs": [],
-    "category": "Major",
-    "genEdSets": [],
-    "substitutionAllowed": true,
-    "substitutionClassIds": [
-      "037"
+    "prereqs": [
+      "033"
     ],
+    "concurrentPrereqs": [],
+    "category": "ChemLab",
+    "genEdSets": [],
+    "substitutionAllowed": false,
+    "substitutionClassIds": [],
     "abetCategory": "Sci"
   },
   {
@@ -2236,5 +2237,66 @@ export const INITIAL_COURSES: Course[] = [
     "substitutionAllowed": false,
     "substitutionClassIds": [],
     "abetCategory": ""
+  },
+  {
+    "classId": "112",
+    "classNumber": "113",
+    "deptCode": "CHEM",
+    "typicalYear": "Sophomore",
+    "credits": 2,
+    "topic": "General Chemistry Lab",
+    "termsTaught": [
+      "Fall",
+      "Winter"
+    ],
+    "prereqs": [
+      "012"
+    ],
+    "concurrentPrereqs": [],
+    "category": "ChemLab",
+    "genEdSets": [],
+    "substitutionAllowed": false,
+    "substitutionClassIds": [],
+    "abetCategory": "Sci"
+  },
+  {
+    "classId": "113",
+    "classNumber": "465",
+    "deptCode": "CHEM",
+    "typicalYear": "Senior",
+    "credits": 1,
+    "topic": "PChem Lab 2",
+    "termsTaught": [
+      "Winter"
+    ],
+    "prereqs": [
+      "033"
+    ],
+    "concurrentPrereqs": [],
+    "category": "ChemLab",
+    "genEdSets": [],
+    "substitutionAllowed": false,
+    "substitutionClassIds": [],
+    "abetCategory": "Sci"
+  },
+  {
+    "classId": "114",
+    "classNumber": "518",
+    "deptCode": "CHEM",
+    "typicalYear": "Senior",
+    "credits": 2,
+    "topic": "Advanced Inorganic Lab",
+    "termsTaught": [
+      "Fall"
+    ],
+    "prereqs": [
+      "012"
+    ],
+    "concurrentPrereqs": [],
+    "category": "ChemLab",
+    "genEdSets": [],
+    "substitutionAllowed": false,
+    "substitutionClassIds": [],
+    "abetCategory": "Sci"
   }
 ];

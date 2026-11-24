@@ -88,6 +88,7 @@ export const CatalogTab: React.FC = () => {
               >
                 <option value="all">All Categories ({INITIAL_COURSES.length})</option>
                 <option value="Major">Major Core</option>
+                <option value="ChemLab">Chemistry Lab (2 cr req)</option>
                 <option value="Gen">General Education (Gen)</option>
                 <option value="Rel">Religion (Rel)</option>
                 <option value="Eng">Engineering Electives (Eng)</option>
@@ -126,6 +127,8 @@ export const CatalogTab: React.FC = () => {
                         className={`px-2 py-0.5 rounded font-semibold text-[10px] ${
                           c.category === 'Major'
                             ? 'bg-blue-100 text-blue-800'
+                            : c.category === 'ChemLab'
+                            ? 'bg-teal-100 text-teal-800'
                             : c.category === 'Gen'
                             ? 'bg-emerald-100 text-emerald-800'
                             : c.category === 'Rel'

@@ -230,6 +230,31 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
               />
             </div>
 
+            {/* Chemistry Lab Slider */}
+            <div>
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                <span>Chemistry Laboratory Requirement</span>
+                <span className="text-byu-royal font-extrabold">{interventions.chemLabCreditsRequired} Credit Hours</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                2 cr from CHEM 113 (2 cr, F/W), CHEM 355 (2 cr, All terms), CHEM 464/465 (1 cr ea, W), or CHEM 518 (2 cr, F)
+              </p>
+              <input
+                type="range"
+                min="0"
+                max="2"
+                step="1"
+                value={interventions.chemLabCreditsRequired}
+                onChange={(e) => onChangeInterventions({ ...interventions, chemLabCreditsRequired: parseInt(e.target.value) })}
+                className="w-full mt-2 accent-byu-royal cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                <span>0 hrs (Exempt)</span>
+                <span>1 hr</span>
+                <span className="font-bold text-byu-royal">2 hrs (Default)</span>
+              </div>
+            </div>
+
             {/* General Education Set Selector */}
             <div className="pt-3 border-t border-slate-200 space-y-2">
               <span className="text-xs font-bold text-slate-700 block uppercase tracking-wide">General Education Curriculum Model</span>
@@ -328,26 +353,6 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                     interventions.removeMath303 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
                   }`}>
                     {interventions.removeMath303 ? 'Exempt' : 'Required'}
-                  </span>
-                </button>
-
-                {/* CHEM 464 */}
-                <button
-                  onClick={() => onChangeInterventions({ ...interventions, removeChem464: !interventions.removeChem464 })}
-                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
-                    interventions.removeChem464
-                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
-                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div>
-                    <span className="block font-bold">CHEM 464</span>
-                    <span className="text-[11px] font-normal text-slate-500">P-Chem Lab (1 cr)</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
-                    interventions.removeChem464 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {interventions.removeChem464 ? 'Exempt' : 'Required'}
                   </span>
                 </button>
 

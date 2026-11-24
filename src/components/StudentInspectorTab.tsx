@@ -73,7 +73,7 @@ export const StudentInspectorTab: React.FC<StudentInspectorTabProps> = ({ simula
         epsel += c.credits;
         eng += c.credits;
       }
-      else if (c.category === 'Major') major += c.credits;
+      else if (c.category === 'Major' || c.category === 'ChemLab') major += c.credits;
 
       if (c.abetCategory === 'Eng') abetEng += c.credits;
       else if (c.abetCategory === 'Sci') abetSci += c.credits;

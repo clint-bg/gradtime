@@ -1,5 +1,5 @@
 export type Term = 'Fall' | 'Winter' | 'Spring' | 'Summer';
-export type CourseCategory = 'Major' | 'Eng' | 'EMSB' | 'EPSEL' | 'Gen' | 'Rel';
+export type CourseCategory = 'Major' | 'ChemLab' | 'Eng' | 'EMSB' | 'EPSEL' | 'Gen' | 'Rel';
 
 export interface Course {
   classId: string;
@@ -59,6 +59,7 @@ export interface Interventions {
   engCreditsRequired: number;     // default 9 (non-EPSEL Eng electives; + 3 cr EPSEL = 12 cr total)
   emsbCreditsRequired: number;    // default 4
   epselCreditsRequired: number;   // default 3 (counts toward 12 cr total engineering electives)
+  chemLabCreditsRequired: number; // default 2 (2 cr from CHEM 113, 355, 464, 465, 518)
   // General Education Set selection
   genEdSet: 1 | 2;               // default 1 (Set 1 vs Set 2)
   // Specific course credit hour overrides (courseId -> credits)
@@ -69,7 +70,6 @@ export interface Interventions {
   removeWrtg316: boolean;        // default false (remove WRTG 316)
   removeEcon110: boolean;        // default false (remove ECON 110)
   removeMath303: boolean;        // default false (remove MATH 303)
-  removeChem464: boolean;        // default true (exempt CHEM 464 by default; taken by only 6.5% of actual graduates)
   removeStat121: boolean;        // default false (remove STAT 121)
   removeCbeSeminars: boolean;    // default false (remove CBE 191, 291, 391)
   // Student population parameters
