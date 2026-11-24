@@ -72,9 +72,6 @@ export interface Interventions {
   removeChem464: boolean;        // default true (exempt CHEM 464 by default; taken by only 6.5% of actual graduates)
   removeStat121: boolean;        // default false (remove STAT 121)
   removeCbeSeminars: boolean;    // default false (remove CBE 191, 291, 391)
-  removeCbe436: boolean;         // default false (remove CBE 436 Process Control)
-  removeCbe476: boolean;         // default false (remove CBE 476 Separations)
-  removeCbe445: boolean;         // default false (remove CBE 445 Separations & Control Lab)
   // Student population parameters
   populationMeanCredits: number; // default 17.0 (yields ~14.6 cr/sem realized, matching 14.7 cr/sem observed)
   populationStdDevCredits: number; // default 1.6 (empirical per-student std dev: 1.61)

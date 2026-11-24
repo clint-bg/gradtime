@@ -390,66 +390,6 @@ export const InterventionsTab: React.FC<InterventionsTabProps> = ({
                     {interventions.removeCbeSeminars ? 'Exempt' : 'Required'}
                   </span>
                 </button>
-
-                {/* CBE 436 */}
-                <button
-                  onClick={() => onChangeInterventions({ ...interventions, removeCbe436: !interventions.removeCbe436 })}
-                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
-                    interventions.removeCbe436
-                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
-                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div>
-                    <span className="block font-bold">CBE 436</span>
-                    <span className="text-[11px] font-normal text-slate-500">Process Control (3 cr)</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
-                    interventions.removeCbe436 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {interventions.removeCbe436 ? 'Exempt' : 'Required'}
-                  </span>
-                </button>
-
-                {/* CBE 476 */}
-                <button
-                  onClick={() => onChangeInterventions({ ...interventions, removeCbe476: !interventions.removeCbe476 })}
-                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
-                    interventions.removeCbe476
-                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
-                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div>
-                    <span className="block font-bold">CBE 476</span>
-                    <span className="text-[11px] font-normal text-slate-500">Separations (3 cr)</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
-                    interventions.removeCbe476 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {interventions.removeCbe476 ? 'Exempt' : 'Required'}
-                  </span>
-                </button>
-
-                {/* CBE 445 */}
-                <button
-                  onClick={() => onChangeInterventions({ ...interventions, removeCbe445: !interventions.removeCbe445 })}
-                  className={`p-2.5 rounded-lg border text-left text-xs font-semibold flex items-center justify-between transition-all ${
-                    interventions.removeCbe445
-                      ? 'bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm'
-                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div>
-                    <span className="block font-bold">CBE 445</span>
-                    <span className="text-[11px] font-normal text-slate-500">Separations & Control Lab (0.5 cr)</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${
-                    interventions.removeCbe445 ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {interventions.removeCbe445 ? 'Exempt' : 'Required'}
-                  </span>
-                </button>
               </div>
             </div>
           </div>

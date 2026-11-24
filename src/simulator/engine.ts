@@ -56,9 +56,6 @@ export function isCourseExempted(classId: string, interventions: Interventions):
   if (classId === '038' && interventions.removeChem464) return true;
   if (classId === '036' && interventions.removeStat121) return true;
   if ((classId === '002' || classId === '004' || classId === '022') && interventions.removeCbeSeminars) return true;
-  if (classId === '023' && interventions.removeCbe436) return true;
-  if (classId === '026' && interventions.removeCbe476) return true;
-  if (classId === '024' && interventions.removeCbe445) return true;
   return false;
 }
 
@@ -78,9 +75,6 @@ export function getDefaultInterventions(): Interventions {
     removeChem464: true,
     removeStat121: false,
     removeCbeSeminars: false,
-    removeCbe436: false,
-    removeCbe476: false,
-    removeCbe445: false,
     populationMeanCredits: 17.0,
     populationStdDevCredits: 1.6,
     workingPercentage: 0.30,
@@ -215,15 +209,6 @@ export function runSimulation(
     }
     if (interventions.removeChem464) {
       overridePrereqs = overridePrereqs.filter(pId => pId !== '038');
-    }
-    if (interventions.removeCbe436) {
-      overridePrereqs = overridePrereqs.filter(pId => pId !== '023');
-    }
-    if (interventions.removeCbe476) {
-      overridePrereqs = overridePrereqs.filter(pId => pId !== '026');
-    }
-    if (interventions.removeCbe445) {
-      overridePrereqs = overridePrereqs.filter(pId => pId !== '024');
     }
 
     const overrideTerms = interventions.offeringOverrides[c.classId] !== undefined
